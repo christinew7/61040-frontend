@@ -7,8 +7,8 @@
 
 <script setup>
 defineProps({
-  msg: String
-})
+  msg: String,
+});
 </script>
 
 <style scoped>
