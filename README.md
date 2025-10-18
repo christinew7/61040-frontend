@@ -34,4 +34,5 @@ Files of interest
 - `src/main.js` - Vue bootstrap
 - `src/App.vue` - root component
 - `src/components/HelloWorld.vue` - sample component
+
 # 61040-frontend
