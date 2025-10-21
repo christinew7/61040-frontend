@@ -1,12 +1,11 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="https://vuejs.org/images/logo.svg" width="120" />
-    <HelloWorld msg="Welcome to 61040 Frontend" />
+    <router-view />
   </div>
 </template>
 
 <script setup>
-import HelloWorld from "./components/HelloWorld.vue";
+// Router will handle rendering pages
 </script>
 
 <style>
