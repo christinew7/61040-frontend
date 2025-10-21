@@ -7,14 +7,14 @@
     </header>
 
     <section class="add-term-section">
-      <h2 class="section-title">Add New Term</h2>
-      <form @submit.prevent="handleAddTerm" class="term-form">
+      <h2 class="section-title">Add US → UK Translation</h2>
+      <form @submit.prevent="handleAddLanguageTerm" class="term-form">
         <div class="form-row">
           <div class="form-group">
-            <label for="language1">English Term</label>
+            <label for="us-term">US English Term</label>
             <input
-              id="language1"
-              v-model="newTerm.language1"
+              id="us-term"
+              v-model="languageTerm.language1"
               type="text"
               placeholder="e.g., single crochet"
               required
@@ -22,10 +22,45 @@
           </div>
 
           <div class="form-group">
-            <label for="language2">Translation</label>
+            <label for="uk-term">UK English Term</label>
             <input
-              id="language2"
-              v-model="newTerm.language2"
+              id="uk-term"
+              v-model="languageTerm.language2"
+              type="text"
+              placeholder="e.g., double crochet"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <PrimaryButton type="submit" :loading="addingLanguage">
+            Add US → UK Term
+          </PrimaryButton>
+        </div>
+      </form>
+    </section>
+
+    <section class="add-term-section">
+      <h2 class="section-title">Add Full Name → Abbreviation</h2>
+      <form @submit.prevent="handleAddAbbreviationTerm" class="term-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="full-name">Full Name</label>
+            <input
+              id="full-name"
+              v-model="abbreviationTerm.language1"
+              type="text"
+              placeholder="e.g., single crochet"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="abbreviation">Abbreviation</label>
+            <input
+              id="abbreviation"
+              v-model="abbreviationTerm.language2"
               type="text"
               placeholder="e.g., sc"
               required
@@ -34,8 +69,8 @@
         </div>
 
         <div class="form-actions">
-          <PrimaryButton type="submit" :loading="adding">
-            Add Term
+          <PrimaryButton type="submit" :loading="addingAbbreviation">
+            Add Abbreviation
           </PrimaryButton>
         </div>
       </form>
@@ -74,16 +109,28 @@
     </section>
 
     <section class="terms-list-section">
-      <h2 class="section-title">Common Crochet Terms</h2>
+      <h2 class="section-title">Example Terms</h2>
       <div class="terms-info">
         <p class="info-text">
-          Use this dictionary to translate between full crochet terms and their
-          abbreviations. This helps the pattern tracker understand your patterns
-          better.
+          Use these dictionaries to translate between US/UK terminology and
+          full/abbreviated crochet terms. This helps the pattern tracker
+          understand your patterns better.
         </p>
       </div>
+
       <div class="example-terms">
-        <h3>Example Terms to Add:</h3>
+        <h3>US → UK Translations:</h3>
+        <ul>
+          <li>single crochet (US) → double crochet (UK)</li>
+          <li>double crochet (US) → treble crochet (UK)</li>
+          <li>half double crochet (US) → half treble crochet (UK)</li>
+          <li>treble crochet (US) → double treble crochet (UK)</li>
+          <li>skip (US) → miss (UK)</li>
+        </ul>
+      </div>
+
+      <div class="example-terms">
+        <h3>Full Name → Abbreviation:</h3>
         <ul>
           <li>chain → ch</li>
           <li>single crochet → sc</li>
@@ -112,35 +159,75 @@ import {
 const router = useRouter();
 const route = useRoute();
 
-const newTerm = ref({
+const languageTerm = ref({
+  language1: "",
+  language2: "",
+});
+
+const abbreviationTerm = ref({
   language1: "",
   language2: "",
 });
 
 const testInput = ref("");
 const translationResult = ref("");
-const adding = ref(false);
+const addingLanguage = ref(false);
+const addingAbbreviation = ref(false);
 const translating = ref(false);
 
-const handleAddTerm = async () => {
-  if (!newTerm.value.language1 || !newTerm.value.language2) {
-    // alert("Please provide both terms");
+const handleAddLanguageTerm = async () => {
+  if (!languageTerm.value.language1 || !languageTerm.value.language2) {
+    alert("Please provide both US and UK terms");
     return;
   }
 
-  adding.value = true;
+  addingLanguage.value = true;
   try {
-    await addTerm(newTerm.value.language1, newTerm.value.language2);
-    // alert(`Added: "${newTerm.value.language1}" ↔ "${newTerm.value.language2}"`);
+    await addTerm(
+      "language",
+      languageTerm.value.language1,
+      languageTerm.value.language2
+    );
+    alert(
+      `Added US→UK: "${languageTerm.value.language1}" → "${languageTerm.value.language2}"`
+    );
 
     // Clear the form
-    newTerm.value.language1 = "";
-    newTerm.value.language2 = "";
+    languageTerm.value.language1 = "";
+    languageTerm.value.language2 = "";
   } catch (err) {
-    console.error("Failed to add term:", err);
-    alert(err.message || "Failed to add term");
+    console.error("Failed to add language term:", err);
+    alert(err.message || "Failed to add language term");
   } finally {
-    adding.value = false;
+    addingLanguage.value = false;
+  }
+};
+
+const handleAddAbbreviationTerm = async () => {
+  if (!abbreviationTerm.value.language1 || !abbreviationTerm.value.language2) {
+    alert("Please provide both full name and abbreviation");
+    return;
+  }
+
+  addingAbbreviation.value = true;
+  try {
+    await addTerm(
+      "abbreviation",
+      abbreviationTerm.value.language1,
+      abbreviationTerm.value.language2
+    );
+    alert(
+      `Added abbreviation: "${abbreviationTerm.value.language1}" → "${abbreviationTerm.value.language2}"`
+    );
+
+    // Clear the form
+    abbreviationTerm.value.language1 = "";
+    abbreviationTerm.value.language2 = "";
+  } catch (err) {
+    console.error("Failed to add abbreviation:", err);
+    alert(err.message || "Failed to add abbreviation");
+  } finally {
+    addingAbbreviation.value = false;
   }
 };
 
