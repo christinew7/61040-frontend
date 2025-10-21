@@ -188,9 +188,9 @@ const handleAddLanguageTerm = async () => {
       languageTerm.value.language1,
       languageTerm.value.language2
     );
-    alert(
-      `Added US→UK: "${languageTerm.value.language1}" → "${languageTerm.value.language2}"`
-    );
+    // alert(
+    //   `Added US→UK: "${languageTerm.value.language1}" → "${languageTerm.value.language2}"`
+    // );
 
     // Clear the form
     languageTerm.value.language1 = "";
@@ -216,9 +216,9 @@ const handleAddAbbreviationTerm = async () => {
       abbreviationTerm.value.language1,
       abbreviationTerm.value.language2
     );
-    alert(
-      `Added abbreviation: "${abbreviationTerm.value.language1}" → "${abbreviationTerm.value.language2}"`
-    );
+    // alert(
+    //   `Added abbreviation: "${abbreviationTerm.value.language1}" → "${abbreviationTerm.value.language2}"`
+    // );
 
     // Clear the form
     abbreviationTerm.value.language1 = "";
