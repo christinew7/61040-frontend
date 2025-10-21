@@ -24,6 +24,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
+import { useUserStore } from "../stores/userStore";
 
 const props = defineProps({
   userId: {
@@ -32,16 +33,22 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["logout"]);
 const router = useRouter();
+const userStore = useUserStore();
 
 const handleLogout = () => {
-  emit("logout");
+  userStore.logout();
   router.push({ name: "Home" });
 };
 </script>
 
 <style scoped>
+header {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .navbar {
   background: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -49,11 +56,13 @@ const handleLogout = () => {
   top: 0;
   z-index: 100;
   width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .navbar-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
   padding: 1rem 1.5rem;
   display: flex;
   justify-content: space-between;

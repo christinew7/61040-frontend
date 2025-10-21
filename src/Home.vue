@@ -35,12 +35,13 @@
 
 <script setup>
 import PrimaryButton from "./components/PrimaryButton.vue";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { register, authenticate } from "./api/PasswordAuthentication";
-
+import { useUserStore } from "./stores/userStore";
 
 const router = useRouter();
+const userStore = useUserStore();
 const mode = ref(null); // null | 'login' | 'signup'
 const username = ref("");
 const password = ref("");
@@ -83,6 +84,10 @@ async function submitAuth() {
     }
 
     console.log("Navigating to library with userId:", userId);
+
+    // Store user session
+    userStore.login(userId, username.value);
+
     mode.value = null;
 
     // Navigate to library page with userId
@@ -94,6 +99,13 @@ async function submitAuth() {
     submitting.value = false;
   }
 }
+
+// Check if user is already logged in and redirect
+onMounted(() => {
+  if (userStore.isAuthenticated) {
+    router.push({ name: "Library", params: { userId: userStore.userId } });
+  }
+});
 </script>
 
 <style scoped>

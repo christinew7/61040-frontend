@@ -1,4 +1,6 @@
 <template>
+  <NavBar :userId="userId" />
+
   <main class="upload-pattern">
     <header class="header">
       <h1 class="title">Upload Pattern</h1>
@@ -41,6 +43,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import NavBar from "./components/NavBar.vue";
 import PrimaryButton from "./components/PrimaryButton.vue";
 import {
   createLibrary,

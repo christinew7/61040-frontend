@@ -1,7 +1,7 @@
 <template>
+  <NavBar :userId="userId" />
   <main class="pattern">
     <header class="header">
-      <PrimaryButton @click="goBack">← Back to Library</PrimaryButton>
       <h1 class="title">{{ patternTitle }}</h1>
     </header>
 
@@ -52,6 +52,7 @@
 <script setup>
 import { ref, onMounted, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
+import NavBar from "./components/NavBar.vue";
 import PrimaryButton from "./components/PrimaryButton.vue";
 import IconButton from "./components/IconButton.vue";
 import { getFileString } from "./api/Library";

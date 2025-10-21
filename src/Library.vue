@@ -37,8 +37,10 @@ import FileDisplay from "./components/FileDisplay.vue";
 import { getUsername } from "./api/PasswordAuthentication";
 import { getAllFiles } from "./api/Library";
 import NavBar from "./components/NavBar.vue";
+import { useUserStore } from "./stores/userStore";
 
 const router = useRouter();
+const userStore = useUserStore();
 
 const props = defineProps({
   userId: {
@@ -54,6 +56,10 @@ const fetchUsername = async () => {
     try {
       const result = await getUsername(props.userId);
       displayName.value = result.username;
+      // Update username in store if it's different
+      if (userStore.username !== result.username) {
+        userStore.updateUsername(result.username);
+      }
     } catch (err) {
       console.error("Failed to fetch username", err);
       displayName.value = "Guest";
@@ -64,12 +70,40 @@ const fetchUsername = async () => {
 };
 
 onMounted(() => {
+  // Check if user is logged in
+  if (!userStore.isAuthenticated) {
+    console.log("User not authenticated, redirecting to home");
+    router.push({ name: "Home" });
+    return;
+  }
+
+  // Check if the logged-in user matches the route userId
+  if (userStore.userId !== props.userId) {
+    console.log("User trying to access another user's library, redirecting");
+    alert("You can only access your own library!");
+    router.push({ name: "Library", params: { userId: userStore.userId } });
+    return;
+  }
+
+  // Use stored username if available
+  if (userStore.username) {
+    displayName.value = userStore.username;
+  }
+
   fetchUsername();
   fetchAllFiles();
 });
+
 watch(
   () => props.userId,
-  () => {
+  (newUserId) => {
+    // Check if user is trying to access another user's library
+    if (userStore.isAuthenticated && userStore.userId !== newUserId) {
+      console.log("Route changed to another user's library, redirecting");
+      alert("You can only access your own library!");
+      router.push({ name: "Library", params: { userId: userStore.userId } });
+      return;
+    }
     fetchUsername();
     fetchAllFiles();
   }
@@ -164,7 +198,7 @@ function viewPattern(file) {
 }
 .files-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   margin-top: 1.5rem;
 }

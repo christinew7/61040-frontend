@@ -13,13 +13,21 @@ const api = axios.create({
  * @route POST api/Dictionary/addTerm
  * @desc Adds a new term pair (a word in one language and its translation in another) to the dictionary.
  */
-export async function addTerm(language1, language2) {
+export async function addTerm(type, language1, language2) {
+  if (
+    typeof type !== "string" ||
+    (type !== "language" && type !== "abbreviation")
+  ) {
+    throw new TypeError(
+      `type ${type} is incorrect. Must be 'language' or 'abbreviation'.`
+    );
+  }
   if (typeof language1 !== "string" || typeof language2 !== "string") {
     throw new TypeError("language1 and language2 must be strings");
   }
 
   try {
-    const response = await api.post("/addTerm", { language1, language2 });
+    const response = await api.post("/addTerm", { type, language1, language2 });
     return response.data.id;
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to add term");
