@@ -1,0 +1,29 @@
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--color-primary-dark);
+  color: var(--color-text-light);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+.primary-button:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: var(--color-text-dark);
+}
+.primary-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.spinner {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
