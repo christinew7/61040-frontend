@@ -1,7 +1,5 @@
 # 61040-frontend
 
-This repository was initialized with a minimal Vite + Vue 3 scaffold.
-
 Getting started
 
 1. Install dependencies
@@ -43,5 +41,3 @@ Create a `.env.local` file (not committed) to point the frontend at your backend
 VITE_API_BASE_URL=/api
 VITE_API_SPEC_URL=/api
 ```
-
-# 61040-frontend
