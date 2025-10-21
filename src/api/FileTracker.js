@@ -181,3 +181,20 @@ export async function getCurrentItem(owner, file) {
     throw new Error(err.response?.data?.error || "Failed to get current item");
   }
 }
+
+/**
+ * @route POST api/FileTracker/_getVisibility
+ * @desc Retrieves the visibility for a specific file being tracked by a user.
+ */
+export async function getVisibility(owner, file) {
+  if (typeof owner !== "string" || typeof file !== "string") {
+    throw new TypeError("owner and file must be strings");
+  }
+
+  try {
+    const response = await api.post("/_getVisibility", { owner, file });
+    return response.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.error || "Failed to get current item");
+  }
+}
