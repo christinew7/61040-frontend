@@ -9,41 +9,84 @@
       <p v-if="loading" class="loading">Loading pattern...</p>
       <p v-else-if="error" class="error">{{ error }}</p>
       <section v-else class="pattern-container">
-        <div class="content">
-          <div
-            v-for="(line, index) in patternLines"
-            :key="index"
-            :class="['line', { 'current-line': index === currentIndex - 1 }]"
-            @click="handleLineClick(index + 1)"
-          >
-            {{ line }}
+        <!-- Language controls above pattern text -->
+        <section class="language-controls-section">
+          <div class="language-selector">
+            <label for="pattern-lang">Pattern language:</label>
+            <select id="pattern-lang" v-model="patternLanguage">
+              <option value="US">US English</option>
+              <option value="UK">UK English</option>
+            </select>
           </div>
-        </div>
 
-        <aside
-          class="navigation-controls"
-          :style="{ top: controlsTopOffset + 'px' }"
-        >
-          <!-- <div class="current-position">
+          <div class="translation-toggle">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                v-model="translatePattern"
+                :disabled="translating"
+              />
+              <span>
+                {{
+                  translating
+                    ? "Translating..."
+                    : `Translate to ${patternLanguage === "US" ? "UK" : "US"}`
+                }}
+              </span>
+            </label>
+          </div>
+
+          <IconButton
+            :icon="isVisible ? '💡' : '🌙'"
+            label=""
+            :aria-label="isVisible ? 'Hide pattern' : 'Show pattern'"
+            variant="primary"
+            @click="handleVisibility"
+          ></IconButton>
+        </section>
+
+        <div class="pattern-wrapper">
+          <div class="content">
+            <div
+              v-for="(line, index) in patternLines"
+              :key="index"
+              :class="[
+                'line',
+                { 'current-line': isVisible && index === currentIndex - 1 },
+                { dimmed: !isVisible },
+              ]"
+              @click="isVisible ? handleLineClick(index + 1) : null"
+            >
+              {{ line }}
+            </div>
+          </div>
+
+          <aside
+            v-if="isVisible"
+            class="navigation-controls"
+            :style="{ top: controlsTopOffset + 'px' }"
+          >
+            <!-- <div class="current-position">
             Line {{ currentIndex }} of {{ patternLines.length }}
           </div> -->
-          <IconButton
-            icon="↑"
-            label=""
-            aria-label="Go to previous line"
-            variant="primary"
-            :disabled="currentIndex <= 1"
-            @click="handleBack"
-          />
-          <IconButton
-            icon="↓"
-            label=""
-            aria-label="Go to next line"
-            variant="primary"
-            :disabled="currentIndex >= patternLines.length"
-            @click="handleNext"
-          />
-        </aside>
+            <IconButton
+              icon="↑"
+              label=""
+              aria-label="Go to previous line"
+              variant="primary"
+              :disabled="currentIndex <= 1"
+              @click="handleBack"
+            />
+            <IconButton
+              icon="↓"
+              label=""
+              aria-label="Go to next line"
+              variant="primary"
+              :disabled="currentIndex >= patternLines.length"
+              @click="handleNext"
+            />
+          </aside>
+        </div>
       </section>
     </section>
   </main>
@@ -56,7 +99,15 @@ import NavBar from "./components/NavBar.vue";
 import PrimaryButton from "./components/PrimaryButton.vue";
 import IconButton from "./components/IconButton.vue";
 import { getFileString } from "./api/Library";
-import { jumpTo, next, back, getCurrentItem } from "./api/FileTracker";
+import {
+  jumpTo,
+  next,
+  back,
+  getCurrentItem,
+  setVisibility,
+  getVisibility,
+} from "./api/FileTracker";
+import { translateTermFromL1, translateTermFromL2 } from "./api/Dictionary";
 
 const router = useRouter();
 
@@ -73,16 +124,71 @@ const props = defineProps({
 
 const patternTitle = ref("");
 const patternLines = ref([]);
+const originalPatternLines = ref([]); // Store original lines for translation
 const loading = ref(true);
 const error = ref("");
 const currentIndex = ref(0);
 const controlsTopOffset = ref(0);
+const patternLanguage = ref("US"); // What language the pattern is written in
+const translatePattern = ref(false); // Whether to translate or not
+const isVisible = ref(true); // Track visibility state
+const translating = ref(false); // Track if translation is in progress
+
+// Create a unique key for localStorage based on user and file
+const getStorageKey = (key) => `pattern_${props.userId}_${props.fileId}_${key}`;
+
+// Load saved preferences from localStorage
+const loadSavedPreferences = () => {
+  try {
+    const savedLanguage = localStorage.getItem(getStorageKey("language"));
+    const savedTranslate = localStorage.getItem(getStorageKey("translate"));
+    const savedVisibility = localStorage.getItem(getStorageKey("visibility"));
+
+    if (savedLanguage) {
+      patternLanguage.value = savedLanguage;
+    }
+    if (savedTranslate !== null) {
+      translatePattern.value = savedTranslate === "true";
+    }
+    if (savedVisibility !== null) {
+      isVisible.value = savedVisibility === "true";
+    }
+
+    console.log("Loaded preferences:", {
+      language: patternLanguage.value,
+      translate: translatePattern.value,
+      visibility: isVisible.value,
+    });
+  } catch (err) {
+    console.error("Failed to load saved preferences:", err);
+  }
+};
+
+// Save preferences to localStorage
+const savePreferences = () => {
+  try {
+    localStorage.setItem(getStorageKey("language"), patternLanguage.value);
+    localStorage.setItem(
+      getStorageKey("translate"),
+      translatePattern.value.toString()
+    );
+    localStorage.setItem(
+      getStorageKey("visibility"),
+      isVisible.value.toString()
+    );
+  } catch (err) {
+    console.error("Failed to save preferences:", err);
+  }
+};
 
 const fetchPattern = async () => {
   loading.value = true;
   error.value = "";
 
   try {
+    // Load saved preferences before fetching pattern
+    loadSavedPreferences();
+
     const result = await getFileString(props.userId, props.fileId);
     console.log("Pattern data:", result);
 
@@ -92,6 +198,7 @@ const fetchPattern = async () => {
       if (lines.length > 0) {
         patternTitle.value = lines[0];
         patternLines.value = lines.slice(1);
+        originalPatternLines.value = lines.slice(1); // Store original lines
       } else {
         error.value = "Pattern is empty";
       }
@@ -101,6 +208,7 @@ const fetchPattern = async () => {
 
     // Fetch the current tracking index
     await fetchCurrentIndex();
+    await fetchVisibility();
   } catch (err) {
     console.error("Failed to fetch pattern:", err);
     error.value = err.message || "Failed to load pattern";
@@ -123,8 +231,131 @@ const fetchCurrentIndex = async () => {
   }
 };
 
-const goBack = () => {
-  router.push({ name: "Library", params: { userId: props.userId } });
+const fetchVisibility = async () => {
+  try {
+    const result = await getVisibility(props.userId, props.fileId);
+    console.log("Visibility result:", result);
+
+    // api returns visibility data
+    // Only update from API if no local preference is saved
+    const savedVisibility = localStorage.getItem(getStorageKey("visibility"));
+    if (savedVisibility === null) {
+      isVisible.value = result.visible;
+    }
+  } catch (err) {
+    console.error("Failed to fetch visibility:", err);
+    // Don't set error, just log it - default to visible
+  }
+};
+
+// Translate a single line by replacing terms word by word
+const translateLine = async (line, fromLang) => {
+  // Split the line into words, preserving spaces
+  const words = line.split(/(\s+)/);
+  const translatedWords = [];
+  let hasTranslation = false;
+
+  for (const word of words) {
+    // Skip empty strings and pure whitespace
+    if (!word || word.trim() === "") {
+      translatedWords.push(word);
+      continue;
+    }
+
+    // Match patterns like: *tr, 2tr, tr, tr, or tr.
+    // Captures: prefix (*, numbers, etc.) + letters + suffix (punctuation)
+    const match = word.match(/^([*\d]*)([a-zA-Z]+)(.*)$/);
+    if (!match) {
+      // Not a word pattern (pure symbols, etc.), keep as is
+      translatedWords.push(word);
+      continue;
+    }
+
+    const [, prefix, actualWord, suffix] = match;
+    const lowerWord = actualWord.toLowerCase();
+
+    try {
+      let translatedWord;
+
+      // Try language translation (US <-> UK)
+      if (fromLang === "US") {
+        translatedWord = await translateTermFromL1("language", lowerWord);
+      } else {
+        translatedWord = await translateTermFromL2("language", lowerWord);
+      }
+
+      // Check if translation was successful and not undefined/null/empty
+      if (translatedWord && translatedWord.trim() !== "") {
+        // Preserve original capitalization
+        if (actualWord[0] === actualWord[0].toUpperCase()) {
+          translatedWord =
+            translatedWord.charAt(0).toUpperCase() + translatedWord.slice(1);
+        }
+
+        console.log(
+          `✓ Translated: "${prefix}${actualWord}" → "${prefix}${translatedWord}"`
+        );
+        translatedWords.push(prefix + translatedWord + suffix);
+        hasTranslation = true;
+      } else {
+        // Translation returned undefined or empty, keep original
+        translatedWords.push(word);
+      }
+    } catch (err) {
+      // If translation fails (word not in dictionary), keep original word
+      translatedWords.push(word);
+    }
+  }
+
+  const result = translatedWords.join("");
+  if (hasTranslation) {
+    console.log(`Original: "${line}"`);
+    console.log(`Result: "${result}"`);
+  }
+  return result;
+};
+
+// Apply translation to all pattern lines
+const applyTranslation = async () => {
+  if (!translatePattern.value) {
+    // Reset to original lines
+    patternLines.value = [...originalPatternLines.value];
+    return;
+  }
+
+  translating.value = true;
+  try {
+    const translatedLines = [];
+    let translatedCount = 0;
+    let failedCount = 0;
+
+    for (const line of originalPatternLines.value) {
+      try {
+        const translatedLine = await translateLine(line, patternLanguage.value);
+        translatedLines.push(translatedLine);
+        if (translatedLine !== line) {
+          translatedCount++;
+        }
+      } catch (err) {
+        console.error("Failed to translate line:", line, err);
+        translatedLines.push(line); // Keep original line if translation fails
+        failedCount++;
+      }
+    }
+
+    patternLines.value = translatedLines;
+    console.log(
+      `Translation complete. Translated: ${translatedCount}, Failed: ${failedCount}, Total lines: ${originalPatternLines.value.length}`
+    );
+  } catch (err) {
+    console.error("Translation failed:", err);
+    alert("Translation failed. Check the dictionary for missing terms.");
+    // Reset to original on complete failure
+    patternLines.value = [...originalPatternLines.value];
+    translatePattern.value = false;
+  } finally {
+    translating.value = false;
+  }
 };
 
 const handleNext = async () => {
@@ -157,6 +388,27 @@ const handleLineClick = async (lineIndex) => {
   } catch (err) {
     console.error("Failed to jump to line:", err);
     alert(err.message || "Failed to jump to line");
+  }
+};
+
+const handleVisibility = async () => {
+  try {
+    // Toggle the visibility state
+    isVisible.value = !isVisible.value;
+
+    // Save to localStorage
+    savePreferences();
+
+    // Call the API to update visibility on the backend
+    await setVisibility(props.userId, props.fileId, isVisible.value);
+
+    console.log(`Visibility set to: ${isVisible.value}`);
+  } catch (err) {
+    console.error("Failed to set visibility:", err);
+    alert(err.message || "Failed to set visibility");
+    // Revert the state if API call fails
+    isVisible.value = !isVisible.value;
+    savePreferences();
   }
 };
 
@@ -198,6 +450,13 @@ watch(currentIndex, () => {
   updateControlsPosition();
 });
 
+// Watch for translation setting changes
+watch([translatePattern, patternLanguage], async () => {
+  // Save preferences when they change
+  savePreferences();
+  await applyTranslation();
+});
+
 onMounted(async () => {
   await fetchPattern();
   await updateControlsPosition();
@@ -230,6 +489,78 @@ onMounted(async () => {
 }
 
 .pattern-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+  position: relative;
+  width: 100%;
+}
+
+.language-controls-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.language-selector label {
+  font-weight: 600;
+  color: var(--color-text-dark);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.language-selector select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--color-text-dark);
+  background-color: white;
+  cursor: pointer;
+}
+
+.language-selector select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.translation-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: var(--color-text-dark);
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.checkbox-label span {
+  white-space: nowrap;
+}
+
+.pattern-wrapper {
   display: flex;
   gap: 2rem;
   align-items: flex-start;
@@ -290,7 +621,12 @@ onMounted(async () => {
   transition: background-color 0.2s ease;
 }
 
-.line:hover:not(.current-line) {
+.line.dimmed {
+  cursor: default;
+  pointer-events: none;
+}
+
+.line:hover:not(.current-line):not(.dimmed) {
   background-color: rgba(179, 206, 229, 0.2); /* Light blue hover */
 }
 

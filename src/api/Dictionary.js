@@ -38,13 +38,22 @@ export async function addTerm(type, language1, language2) {
  * @route POST api/Dictionary/deleteTerm
  * @desc Deletes a specific term pair from the dictionary.
  */
-export async function deleteTerm(language1, language2) {
+export async function deleteTerm(type, language1, language2) {
+  if (
+    typeof type !== "string" ||
+    (type !== "language" && type !== "abbreviation")
+  ) {
+    throw new TypeError(
+      `type ${type} is incorrect. Must be 'language' or 'abbreviation'.`
+    );
+  }
+
   if (typeof language1 !== "string" || typeof language2 !== "string") {
     throw new TypeError("language1 and language2 must be strings");
   }
 
   try {
-    await api.post("/deleteTerm", { language1, language2 });
+    await api.post("/deleteTerm", { type, language1, language2 });
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to delete term");
   }
@@ -54,13 +63,25 @@ export async function deleteTerm(language1, language2) {
  * @route POST api/Dictionary/translateTermFromL1
  * @desc Translates a given word from language1 to language2.
  */
-export async function translateTermFromL1(language1) {
+export async function translateTermFromL1(type, language1) {
+  if (
+    typeof type !== "string" ||
+    (type !== "language" && type !== "abbreviation")
+  ) {
+    throw new TypeError(
+      `type ${type} is incorrect. Must be 'language' or 'abbreviation'.`
+    );
+  }
+
   if (typeof language1 !== "string") {
     throw new TypeError("language1 must be a string");
   }
 
   try {
-    const response = await api.post("/translateTermFromL1", { language1 });
+    const response = await api.post("/translateTermFromL1", {
+      type,
+      language1,
+    });
     return response.data.language2;
   } catch (err) {
     throw new Error(
@@ -73,13 +94,25 @@ export async function translateTermFromL1(language1) {
  * @route POST api/Dictionary/translateTermFromL2
  * @desc Translates a given word from language2 to language1.
  */
-export async function translateTermFromL2(language2) {
+export async function translateTermFromL2(type, language2) {
+  if (
+    typeof type !== "string" ||
+    (type !== "language" && type !== "abbreviation")
+  ) {
+    throw new TypeError(
+      `type ${type} is incorrect. Must be 'language' or 'abbreviation'.`
+    );
+  }
+
   if (typeof language2 !== "string") {
     throw new TypeError("language2 must be a string");
   }
 
   try {
-    const response = await api.post("/translateTermFromL2", { language2 });
+    const response = await api.post("/translateTermFromL2", {
+      type,
+      language2,
+    });
     return response.data.language1;
   } catch (err) {
     throw new Error(
