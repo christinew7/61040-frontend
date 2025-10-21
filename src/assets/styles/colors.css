@@ -1,0 +1,19 @@
+:root {
+  /* Primary colors */
+  --color-primary: #f7cac9;
+  --color-primary-dark: #fc9a98;
+  --color-secondary: #b3cee5;
+  --color-secondary-dark: #84b5e0;
+
+  /* Text colors */
+  --color-text-light: #ffffff;
+  --color-text-dark: #111827;
+
+  /* Backgrounds */
+  --color-bg-light: #f9fafb;
+  --color-bg-dark: #1f2937;
+
+  /* Error / warning */
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+}
