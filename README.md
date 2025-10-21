@@ -35,4 +35,13 @@ Files of interest
 - `src/App.vue` - root component
 - `src/components/HelloWorld.vue` - sample component
 
+Environment
+
+Create a `.env.local` file (not committed) to point the frontend at your backend during development. Example:
+
+```
+VITE_API_BASE_URL=/api
+VITE_API_SPEC_URL=/api
+```
+
 # 61040-frontend
