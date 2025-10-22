@@ -28,7 +28,12 @@
         </form>
       </section>
 
-      <p class="subtitle">Your personal crochet companion</p>
+      <p class="subtitle">
+        CrochetBuddy removes the friction from following crochet patterns,
+        making it effortless with following crochet patterns, whether you're
+        used to US or UK terms. CrochetBuddy features an abbreviation reference,
+        US/UK terminology toggle, and a row tracker!
+      </p>
     </header>
   </main>
 </template>
