@@ -57,7 +57,34 @@
               ]"
               @click="isVisible ? handleLineClick(index + 1) : null"
             >
-              {{ line }}
+              <span
+                v-for="(segment, segIndex) in parseLineForAbbreviations(line)"
+                :key="segIndex"
+              >
+                <span
+                  v-if="segment.isAbbreviation"
+                  class="abbreviation"
+                  @click.stop="showAbbreviationTooltip($event, segment.text)"
+                >
+                  {{ segment.text }}
+                </span>
+                <span v-else>{{ segment.text }}</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Tooltip for abbreviation expansion -->
+          <div
+            v-if="tooltipVisible"
+            class="abbreviation-tooltip"
+            :style="{
+              top: tooltipPosition.y + 'px',
+              left: tooltipPosition.x + 'px',
+            }"
+          >
+            <div class="tooltip-content">
+              <div class="tooltip-abbr">{{ tooltipData.abbr }}</div>
+              <div class="tooltip-full">{{ tooltipData.full }}</div>
             </div>
           </div>
 
@@ -108,6 +135,8 @@ import {
   getVisibility,
 } from "./api/FileTracker";
 import { translateTermFromL1, translateTermFromL2 } from "./api/Dictionary";
+import { translateTermFromL1 as translateAbbreviationFromL1 } from "./api/Dictionary";
+import { translateTermFromL2 as translateAbbreviationFromL2 } from "./api/Dictionary";
 
 const router = useRouter();
 
@@ -133,6 +162,11 @@ const patternLanguage = ref("US"); // What language the pattern is written in
 const translatePattern = ref(false); // Whether to translate or not
 const isVisible = ref(true); // Track visibility state
 const translating = ref(false); // Track if translation is in progress
+
+// Tooltip state for abbreviation expansion
+const tooltipVisible = ref(false);
+const tooltipPosition = ref({ x: 0, y: 0 });
+const tooltipData = ref({ abbr: "", full: "" });
 
 // Create a unique key for localStorage based on user and file
 const getStorageKey = (key) => `pattern_${props.userId}_${props.fileId}_${key}`;
@@ -248,6 +282,157 @@ const fetchVisibility = async () => {
   }
 };
 
+// Parse a line to identify abbreviations that can be expanded
+const parseLineForAbbreviations = (line) => {
+  const segments = [];
+  // Split by spaces while preserving them
+  const words = line.split(/(\s+)/);
+
+  for (const word of words) {
+    if (!word) continue;
+
+    // Check if it's whitespace
+    if (/^\s+$/.test(word)) {
+      segments.push({ text: word, isAbbreviation: false });
+      continue;
+    }
+
+    // Match patterns like: *tr, 2tr, tr, trs, etc.
+    const match = word.match(/^([*\d]*)([a-zA-Z]+)(.*)$/);
+    if (match) {
+      const [, prefix, actualWord, suffix] = match;
+      const lowerWord = actualWord.toLowerCase();
+
+      // Common crochet abbreviations to highlight
+      const commonAbbreviations = [
+        "ch",
+        "sc",
+        "dc",
+        "tr",
+        "hdc",
+        "dtr",
+        "ss",
+        "sl",
+        "st",
+        "sts",
+        "sp",
+        "inc",
+        "dec",
+        "yo",
+        "sk",
+        "rep",
+      ];
+
+      // Check if base word (without 's') is an abbreviation
+      let baseWord = lowerWord;
+      if (lowerWord.length > 1 && lowerWord.endsWith("s")) {
+        baseWord = lowerWord.slice(0, -1);
+      }
+
+      if (
+        commonAbbreviations.includes(baseWord) ||
+        commonAbbreviations.includes(lowerWord)
+      ) {
+        segments.push({ text: word, isAbbreviation: true });
+      } else {
+        segments.push({ text: word, isAbbreviation: false });
+      }
+    } else {
+      segments.push({ text: word, isAbbreviation: false });
+    }
+  }
+
+  return segments;
+};
+
+// Show tooltip with abbreviation expansion
+const showAbbreviationTooltip = async (event, abbr) => {
+  console.log("Abbreviation clicked:", abbr);
+  event.stopPropagation();
+
+  // Extract just the letters from the abbreviation (remove prefix/suffix)
+  const match = abbr.match(/^([*\d]*)([a-zA-Z]+)(.*)$/);
+  if (!match) {
+    console.log("No match found for:", abbr);
+    return;
+  }
+
+  const [, , actualWord] = match;
+  let baseWord = actualWord.toLowerCase();
+  let hasPlural = false;
+
+  // Special cases: these abbreviations should be looked up as-is
+  const noPluralizationList = ["ss", "sts"];
+
+  // Handle plural forms (but not for special cases)
+  if (
+    baseWord.length > 1 &&
+    baseWord.endsWith("s") &&
+    !noPluralizationList.includes(baseWord)
+  ) {
+    hasPlural = true;
+    baseWord = baseWord.slice(0, -1);
+  }
+
+  console.log("Trying to expand:", baseWord, "hasPlural:", hasPlural);
+
+  try {
+    // Try to get full form from dictionary (abbreviation type)
+    const fullForm = await translateAbbreviationFromL2(
+      "abbreviation",
+      baseWord
+    );
+
+    console.log("Got expansion:", fullForm);
+
+    if (fullForm && fullForm.trim() !== "") {
+      let displayFull = fullForm;
+      if (hasPlural) {
+        displayFull = fullForm + "s";
+      }
+
+      tooltipData.value = {
+        abbr: abbr,
+        full: displayFull,
+      };
+
+      // Position tooltip near the click
+      tooltipPosition.value = {
+        x: event.clientX + 10,
+        y: event.clientY + 10,
+      };
+
+      tooltipVisible.value = true;
+      console.log("Tooltip should be visible now");
+
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        tooltipVisible.value = false;
+      }, 3000);
+    } else {
+      console.log("Expansion was empty or undefined");
+    }
+  } catch (err) {
+    console.log("No expansion found for:", baseWord, err);
+    // Show tooltip anyway with "No definition available"
+    tooltipData.value = {
+      abbr: abbr,
+      full: "No definition available (add to dictionary)",
+    };
+
+    tooltipPosition.value = {
+      x: event.clientX + 10,
+      y: event.clientY + 10,
+    };
+
+    tooltipVisible.value = true;
+
+    setTimeout(() => {
+      tooltipVisible.value = false;
+    }, 3000);
+  }
+};
+
 // Translate a single line by replacing terms word by word
 const translateLine = async (line, fromLang) => {
   // Split the line into words, preserving spaces
@@ -262,7 +447,7 @@ const translateLine = async (line, fromLang) => {
       continue;
     }
 
-    // Match patterns like: *tr, 2tr, tr, tr, or tr.
+    // Match patterns like: *tr, 2tr, tr, trs, or tr.
     // Captures: prefix (*, numbers, etc.) + letters + suffix (punctuation)
     const match = word.match(/^([*\d]*)([a-zA-Z]+)(.*)$/);
     if (!match) {
@@ -272,7 +457,17 @@ const translateLine = async (line, fromLang) => {
     }
 
     const [, prefix, actualWord, suffix] = match;
-    const lowerWord = actualWord.toLowerCase();
+
+    // Check if the word ends with 's' (plural form)
+    let baseWord = actualWord;
+    let hasPlural = false;
+    if (actualWord.length > 1 && actualWord.toLowerCase().endsWith("s")) {
+      // Try without the 's' first to see if it's a plural
+      baseWord = actualWord.slice(0, -1);
+      hasPlural = true;
+    }
+
+    const lowerWord = baseWord.toLowerCase();
 
     try {
       let translatedWord;
@@ -287,9 +482,14 @@ const translateLine = async (line, fromLang) => {
       // Check if translation was successful and not undefined/null/empty
       if (translatedWord && translatedWord.trim() !== "") {
         // Preserve original capitalization
-        if (actualWord[0] === actualWord[0].toUpperCase()) {
+        if (baseWord[0] === baseWord[0].toUpperCase()) {
           translatedWord =
             translatedWord.charAt(0).toUpperCase() + translatedWord.slice(1);
+        }
+
+        // Add back the plural 's' if it was there
+        if (hasPlural) {
+          translatedWord = translatedWord + "s";
         }
 
         console.log(
@@ -298,8 +498,48 @@ const translateLine = async (line, fromLang) => {
         translatedWords.push(prefix + translatedWord + suffix);
         hasTranslation = true;
       } else {
-        // Translation returned undefined or empty, keep original
-        translatedWords.push(word);
+        // Translation returned undefined or empty
+        // If it was a plural attempt, try the original word without removing 's'
+        if (hasPlural) {
+          try {
+            const fullWordLower = actualWord.toLowerCase();
+            if (fromLang === "US") {
+              translatedWord = await translateTermFromL1(
+                "language",
+                fullWordLower
+              );
+            } else {
+              translatedWord = await translateTermFromL2(
+                "language",
+                fullWordLower
+              );
+            }
+
+            if (translatedWord && translatedWord.trim() !== "") {
+              // Preserve original capitalization
+              if (actualWord[0] === actualWord[0].toUpperCase()) {
+                translatedWord =
+                  translatedWord.charAt(0).toUpperCase() +
+                  translatedWord.slice(1);
+              }
+
+              console.log(
+                `✓ Translated: "${prefix}${actualWord}" → "${prefix}${translatedWord}"`
+              );
+              translatedWords.push(prefix + translatedWord + suffix);
+              hasTranslation = true;
+            } else {
+              // Keep original
+              translatedWords.push(word);
+            }
+          } catch (err) {
+            // Keep original word
+            translatedWords.push(word);
+          }
+        } else {
+          // Keep original
+          translatedWords.push(word);
+        }
       }
     } catch (err) {
       // If translation fails (word not in dictionary), keep original word
@@ -626,6 +866,11 @@ onMounted(async () => {
   pointer-events: none;
 }
 
+.line.dimmed .abbreviation {
+  pointer-events: auto;
+  cursor: help;
+}
+
 .line:hover:not(.current-line):not(.dimmed) {
   background-color: rgba(179, 206, 229, 0.2); /* Light blue hover */
 }
@@ -637,5 +882,62 @@ onMounted(async () => {
   border-radius: 12px;
   margin: 0.25rem 0;
   cursor: pointer;
+}
+
+.abbreviation {
+  color: var(--color-dark);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  cursor: help;
+  /* font-weight: 600; */
+  transition: all 0.2s ease;
+}
+
+.abbreviation:hover {
+  background-color: rgba(247, 202, 201, 0.2);
+  text-decoration-style: solid;
+}
+
+.abbreviation-tooltip {
+  position: fixed;
+  background: white;
+  border: 2px solid var(--color-primary);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  pointer-events: none;
+  animation: tooltipFadeIn 0.2s ease-out;
+  max-width: 250px;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tooltip-abbr {
+  font-family: "Courier New", monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-primary);
+}
+
+.tooltip-full {
+  font-size: 0.85rem;
+  color: var(--color-text-dark);
+  font-weight: 500;
 }
 </style>
