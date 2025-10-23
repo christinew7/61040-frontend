@@ -53,7 +53,7 @@ const handleClick = (event) => {
   padding: 0.75rem 1rem;
   border: 2px solid var(--color-primary);
   border-radius: 8px;
-  background: white;
+  background: var(--color-bg-light);
   color: var(--color-primary);
   font-size: 1rem;
   font-weight: 600;

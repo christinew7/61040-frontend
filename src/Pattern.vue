@@ -840,7 +840,7 @@ onMounted(async () => {
   position: absolute;
   left: calc(100% - 100px);
   padding: 0.5rem;
-  background: white;
+  background: var(--color-bg-light);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: top 0.3s ease;
@@ -917,7 +917,7 @@ onMounted(async () => {
 
 .abbreviation-tooltip {
   position: fixed;
-  background: white;
+  background: var(--color-bg-light);
   border: 2px solid var(--color-primary);
   border-radius: 8px;
   padding: 0.75rem 1rem;

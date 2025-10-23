@@ -13,10 +13,10 @@
   --color-text-dark: #111827;
 
   /* Backgrounds */
-  --color-bg-light: #f9fafb;
+  --color-bg-light: #f7f5f2;
   --color-bg-dark: #1f2937;
 
-  /* Error / warning */
+  /* Error / warning
   --color-error: #ef4444;
-  --color-warning: #f59e0b;
+  --color-warning: #f59e0b; */
 }

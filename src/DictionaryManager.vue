@@ -375,7 +375,7 @@ const goBack = () => {
 .translation-result {
   margin-top: 1rem;
   padding: 1rem;
-  background: white;
+  background: var(--color-bg-light);
   border-radius: 6px;
   border-left: 4px solid var(--color-primary);
   font-size: 1.1rem;
@@ -393,7 +393,7 @@ const goBack = () => {
 }
 
 .example-terms {
-  background: white;
+  background: var(--color-bg-light);
   padding: 1.5rem;
   border-radius: 6px;
 }
