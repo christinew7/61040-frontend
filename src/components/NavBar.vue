@@ -10,6 +10,9 @@
           >
             <h1 class="brand-name">CrochetBuddy</h1>
           </router-link>
+          <router-link v-else :to="{ name: 'Home' }" class="brand-link">
+            <h1 class="brand-name">CrochetBuddy</h1>
+          </router-link>
         </div>
 
         <div class="navbar-menu">
