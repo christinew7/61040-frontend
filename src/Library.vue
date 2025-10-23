@@ -3,7 +3,7 @@
     <NavBar :userId="userId" />
     <main class="library">
       <header class="hero">
-        <h1 class="title">Welcome, {{ displayName }}</h1>
+        <h1 class="title">{{ welcomeMessage }}, {{ displayName }}</h1>
         <p class="subtitle">Your saved patterns and uploads</p>
 
         <div class="actions">
@@ -45,11 +45,27 @@ const userStore = useUserStore();
 const props = defineProps({
   userId: {
     type: String,
+    // default: "",
     required: true,
   },
 });
 
 const displayName = ref("Guest");
+const welcomeMessage = ref("Welcome");
+
+// Check if user is a first-time visitor
+const checkFirstTimeUser = () => {
+  const visitKey = `visited_${props.userId}`;
+  const hasVisitedBefore = localStorage.getItem(visitKey);
+
+  if (hasVisitedBefore) {
+    welcomeMessage.value = "Welcome back";
+  } else {
+    welcomeMessage.value = "Welcome";
+    // Mark that user has now visited
+    localStorage.setItem(visitKey, "true");
+  }
+};
 
 const fetchUsername = async () => {
   if (props.userId) {
@@ -70,7 +86,6 @@ const fetchUsername = async () => {
 };
 
 onMounted(() => {
-  // Check if user is logged in
   if (!userStore.isAuthenticated) {
     console.log("User not authenticated, redirecting to home");
     router.push({ name: "Home" });
@@ -89,6 +104,9 @@ onMounted(() => {
   if (userStore.username) {
     displayName.value = userStore.username;
   }
+
+  // Check if first-time visitor
+  checkFirstTimeUser();
 
   fetchUsername();
   fetchAllFiles();
