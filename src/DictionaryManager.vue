@@ -1,4 +1,5 @@
 <template>
+  <NavBar></NavBar>
   <main class="dictionary-manager">
     <header class="header">
       <PrimaryButton @click="goBack">← Back to Library</PrimaryButton>
@@ -6,6 +7,11 @@
       <p class="subtitle">Add and manage crochet terminology translations</p>
     </header>
 
+    <Warning
+      v-if="showWarning"
+      :message="warningMessage"
+      @close="showWarning = false"
+    />
     <section class="add-term-section">
       <h2 class="section-title">Add US → UK Translation</h2>
       <form @submit.prevent="handleAddLanguageTerm" class="term-form">
@@ -155,6 +161,8 @@ import {
   translateTermFromL1,
   translateTermFromL2,
 } from "./api/Dictionary";
+import NavBar from "./components/NavBar.vue";
+import Warning from "./components/Warning.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -175,9 +183,13 @@ const addingLanguage = ref(false);
 const addingAbbreviation = ref(false);
 const translating = ref(false);
 
+const warningMessage = ref("");
+const showWarning = ref(false);
+
 const handleAddLanguageTerm = async () => {
   if (!languageTerm.value.language1 || !languageTerm.value.language2) {
-    alert("Please provide both US and UK terms");
+    warningMessage.value = "Please provide both US and UK terms.";
+    showWarning.value = true;
     return;
   }
 
@@ -188,16 +200,13 @@ const handleAddLanguageTerm = async () => {
       languageTerm.value.language1,
       languageTerm.value.language2
     );
-    // alert(
-    //   `Added US→UK: "${languageTerm.value.language1}" → "${languageTerm.value.language2}"`
-    // );
 
     // Clear the form
     languageTerm.value.language1 = "";
     languageTerm.value.language2 = "";
   } catch (err) {
-    console.error("Failed to add language term:", err);
-    alert(err.message || "Failed to add language term");
+    warningMessage.value = "Failed to add language term";
+    showWarning.value = true;
   } finally {
     addingLanguage.value = false;
   }
@@ -205,7 +214,8 @@ const handleAddLanguageTerm = async () => {
 
 const handleAddAbbreviationTerm = async () => {
   if (!abbreviationTerm.value.language1 || !abbreviationTerm.value.language2) {
-    alert("Please provide both full name and abbreviation");
+    warningMessage.value = "Please provide both full name and abbreviation";
+    showWarning.value = true;
     return;
   }
 
@@ -216,16 +226,13 @@ const handleAddAbbreviationTerm = async () => {
       abbreviationTerm.value.language1,
       abbreviationTerm.value.language2
     );
-    // alert(
-    //   `Added abbreviation: "${abbreviationTerm.value.language1}" → "${abbreviationTerm.value.language2}"`
-    // );
 
     // Clear the form
     abbreviationTerm.value.language1 = "";
     abbreviationTerm.value.language2 = "";
   } catch (err) {
-    console.error("Failed to add abbreviation:", err);
-    alert(err.message || "Failed to add abbreviation");
+    warningMessage.value = "Failed to add abbreviation";
+    showWarning.value = true;
   } finally {
     addingAbbreviation.value = false;
   }
@@ -233,7 +240,8 @@ const handleAddAbbreviationTerm = async () => {
 
 const translateFromL1 = async () => {
   if (!testInput.value) {
-    // alert("Please enter a term to translate");
+    warningMessage.value = "Please enter a term to translate!";
+    showWarning.value = true;
     return;
   }
 
@@ -242,7 +250,8 @@ const translateFromL1 = async () => {
     const result = await translateTermFromL1(testInput.value);
     translationResult.value = result;
   } catch (err) {
-    console.error("Translation failed:", err);
+    warningMessage.value = "Translation not found...";
+    showWarning.value = true;
     translationResult.value = "Translation not found";
   } finally {
     translating.value = false;
@@ -251,7 +260,8 @@ const translateFromL1 = async () => {
 
 const translateFromL2 = async () => {
   if (!testInput.value) {
-    // alert("Please enter a term to translate");
+    warningMessage.value = "Please enter a term to translate";
+    showWarning.value = true;
     return;
   }
 
@@ -260,7 +270,8 @@ const translateFromL2 = async () => {
     const result = await translateTermFromL2(testInput.value);
     translationResult.value = result;
   } catch (err) {
-    console.error("Translation failed:", err);
+    warningMessage.value = "Translation not found...";
+    showWarning.value = true;
     translationResult.value = "Translation not found";
   } finally {
     translating.value = false;

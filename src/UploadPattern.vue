@@ -1,6 +1,5 @@
 <template>
   <NavBar :userId="userId" />
-
   <main class="upload-pattern">
     <header class="header">
       <h1 class="title">Upload Pattern</h1>
@@ -8,6 +7,12 @@
     </header>
 
     <section class="upload-form">
+      <Warning
+        v-if="showWarning"
+        :message="warningMessage"
+        @close="showWarning = false"
+      />
+
       <form @submit.prevent="handleUpload">
         <section class="form-group">
           <label for="pattern-name">Pattern Name</label>
@@ -45,6 +50,7 @@ import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import NavBar from "./components/NavBar.vue";
 import PrimaryButton from "./components/PrimaryButton.vue";
+import Warning from "./components/Warning.vue";
 import {
   createLibrary,
   createFile,
@@ -60,15 +66,20 @@ const patternName = ref("");
 const patternContent = ref("");
 const uploading = ref(false);
 
+const warningMessage = ref("");
+const showWarning = ref(false);
+
 async function handleUpload() {
   if (!patternName.value || !patternContent.value) {
-    alert("Please provide both a pattern name and content");
+    warningMessage.value = "Please provide both a pattern name and content.";
+    showWarning.value = true;
     return;
   }
 
   const userId = route.params.userId;
   if (!userId) {
-    alert("User ID is missing. Please log in again.");
+    warningMessage.value = "You're not logged in! Please log in again.";
+    showWarning.value = true;
     return;
   }
 
@@ -99,7 +110,6 @@ async function handleUpload() {
     }
 
     console.log("Pattern uploaded successfully");
-    // alert("Pattern uploaded successfully!");
 
     // Also start fileTracking
     // SHOULD BE A SYNC
@@ -115,8 +125,11 @@ async function handleUpload() {
     console.log(result);
     router.push({ name: "Pattern", params: { userId, fileId } });
   } catch (err) {
-    console.error("Upload failed:", err);
-    alert(`Upload failed: ${err?.message || err}`);
+    warningMessage.value = `Sorry... The server failed to upload your pattern: ${
+      err?.message || err
+    }`;
+    showWarning.value = true;
+    return;
   } finally {
     uploading.value = false;
   }

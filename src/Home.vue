@@ -9,7 +9,17 @@
           <PrimaryButton @click="showSignUp">Sign up</PrimaryButton>
         </template>
 
-        <form v-else class="auth-window" @submit.prevent="submitAuth">
+        <form
+          v-else
+          class="auth-window"
+          @submit.prevent="submitAuth"
+          @keyup.enter="submitAuth"
+        >
+          <Warning
+            v-if="showWarning"
+            :message="warningMessage"
+            @close="showWarning = false"
+          />
           <h3>{{ mode === "login" ? "Log in" : "Sign up" }}</h3>
           <label>
             Username
@@ -40,6 +50,7 @@
 
 <script setup>
 import PrimaryButton from "./components/PrimaryButton.vue";
+import Warning from "./components/Warning.vue";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { register, authenticate } from "./api/PasswordAuthentication";
@@ -51,6 +62,8 @@ const mode = ref(null); // null | 'login' | 'signup'
 const username = ref("");
 const password = ref("");
 const submitting = ref(false);
+const showWarning = ref(false);
+const warningMessage = ref("");
 
 function showLogin() {
   mode.value = "login";
@@ -70,7 +83,8 @@ function cancelAuth() {
 
 async function submitAuth() {
   if (!username.value || !password.value) {
-    alert("Please enter a username and password.");
+    warningMessage.value = "Please enter a username and password.";
+    showWarning.value = true;
     return;
   }
 
@@ -99,7 +113,8 @@ async function submitAuth() {
     router.push({ name: "Library", params: { userId: userId } });
   } catch (err) {
     console.error("Authentication error:", err);
-    // alert(`Authentication failed: ${err?.message || err}`);
+    warningMessage.value = `Authentication failed: ${err?.message || err}`;
+    showWarning.value = true;
   } finally {
     submitting.value = false;
   }
@@ -141,6 +156,7 @@ onMounted(() => {
   display: flex;
   gap: 1rem;
   justify-content: center;
+  position: relative;
 }
 
 .auth-window {
@@ -151,6 +167,7 @@ onMounted(() => {
   padding: 1rem;
   border-radius: 8px;
   min-width: 280px;
+  position: relative;
 }
 .auth-window label {
   display: flex;

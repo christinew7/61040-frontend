@@ -1,5 +1,10 @@
 <template>
   <div>
+    <Warning
+      v-if="showWarning"
+      :message="warningMessage"
+      @close="handleWarningClose"
+    />
     <NavBar :userId="userId" />
     <main class="library">
       <header class="hero">
@@ -34,6 +39,7 @@ import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import PrimaryButton from "./components/PrimaryButton.vue";
 import FileDisplay from "./components/FileDisplay.vue";
+import Warning from "./components/Warning.vue";
 import { getUsername } from "./api/PasswordAuthentication";
 import { getAllFiles } from "./api/Library";
 import NavBar from "./components/NavBar.vue";
@@ -52,6 +58,18 @@ const props = defineProps({
 
 const displayName = ref("Guest");
 const welcomeMessage = ref("Welcome");
+const showWarning = ref(false);
+const warningMessage = ref("");
+const pendingRoute = ref(null);
+
+// Handle warning close and navigate if needed
+const handleWarningClose = () => {
+  showWarning.value = false;
+  if (pendingRoute.value) {
+    router.push(pendingRoute.value);
+    pendingRoute.value = null;
+  }
+};
 
 // Check if user is a first-time visitor
 const checkFirstTimeUser = () => {
@@ -94,9 +112,12 @@ onMounted(() => {
 
   // Check if the logged-in user matches the route userId
   if (userStore.userId !== props.userId) {
-    console.log("User trying to access another user's library, redirecting");
-    alert("You can only access your own library!");
-    router.push({ name: "Library", params: { userId: userStore.userId } });
+    warningMessage.value = "You can only access your own library!";
+    showWarning.value = true;
+    pendingRoute.value = {
+      name: "Library",
+      params: { userId: userStore.userId },
+    };
     return;
   }
 
@@ -118,8 +139,12 @@ watch(
     // Check if user is trying to access another user's library
     if (userStore.isAuthenticated && userStore.userId !== newUserId) {
       console.log("Route changed to another user's library, redirecting");
-      alert("You can only access your own library!");
-      router.push({ name: "Library", params: { userId: userStore.userId } });
+      warningMessage.value = "You can only access your own library!";
+      showWarning.value = true;
+      pendingRoute.value = {
+        name: "Library",
+        params: { userId: userStore.userId },
+      };
       return;
     }
     fetchUsername();

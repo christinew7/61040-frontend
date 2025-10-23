@@ -38,21 +38,20 @@ defineEmits(["close"]);
 
 <style scoped>
 .warning-container {
-  position: fixed;
-  top: 80px;
+  position: absolute;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   z-index: 1000;
   width: 90%;
-  max-width: 500px;
 }
 
 .warning-box {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background-color: #fff3cd;
-  border: 2px solid #ffc107;
+  background-color: var(--color-tertiary);
+  border: 2px solid var(--color-tertiary-dark);
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -84,13 +83,13 @@ defineEmits(["close"]);
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #856404;
+  color: #0c1a14;
 }
 
 .warning-message {
   margin: 0;
   font-size: 14px;
-  color: #856404;
+  color: #0c1a14;
   line-height: 1.5;
 }
 
@@ -98,7 +97,7 @@ defineEmits(["close"]);
   background: none;
   border: none;
   font-size: 24px;
-  color: #856404;
+  color: #0c1a14;
   cursor: pointer;
   padding: 0;
   width: 24px;

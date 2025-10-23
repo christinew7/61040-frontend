@@ -1,4 +1,9 @@
 <template>
+  <Warning
+    v-if="showWarning"
+    :message="warningMessage"
+    @close="showWarning = false"
+  />
   <NavBar :userId="userId" />
   <main class="pattern">
     <header class="header">
@@ -125,6 +130,7 @@ import { useRouter } from "vue-router";
 import NavBar from "./components/NavBar.vue";
 import PrimaryButton from "./components/PrimaryButton.vue";
 import IconButton from "./components/IconButton.vue";
+import Warning from "./components/Warning.vue";
 import { getFileString } from "./api/Library";
 import {
   jumpTo,
@@ -167,6 +173,10 @@ const translating = ref(false); // Track if translation is in progress
 const tooltipVisible = ref(false);
 const tooltipPosition = ref({ x: 0, y: 0 });
 const tooltipData = ref({ abbr: "", full: "" });
+
+// Warning state
+const showWarning = ref(false);
+const warningMessage = ref("");
 
 // Create a unique key for localStorage based on user and file
 const getStorageKey = (key) => `pattern_${props.userId}_${props.fileId}_${key}`;
@@ -589,7 +599,10 @@ const applyTranslation = async () => {
     );
   } catch (err) {
     console.error("Translation failed:", err);
-    alert("Translation failed. Check the dictionary for missing terms.");
+    warningMessage.value =
+      "Translation failed. Check the dictionary for missing terms.";
+    showWarning.value = true;
+
     // Reset to original on complete failure
     patternLines.value = [...originalPatternLines.value];
     translatePattern.value = false;
@@ -605,7 +618,8 @@ const handleNext = async () => {
     await updateControlsPosition();
   } catch (err) {
     console.error("Failed to move to next line:", err);
-    alert(err.message || "Failed to move to next line");
+    warningMessage.value = err.message || "Failed to move to next line";
+    showWarning.value = true;
   }
 };
 
@@ -616,7 +630,8 @@ const handleBack = async () => {
     await updateControlsPosition();
   } catch (err) {
     console.error("Failed to move to previous line:", err);
-    alert(err.message || "Failed to move to previous line");
+    warningMessage.value = err.message || "Failed to move to previous line";
+    showWarning.value = true;
   }
 };
 
@@ -627,7 +642,8 @@ const handleLineClick = async (lineIndex) => {
     await updateControlsPosition();
   } catch (err) {
     console.error("Failed to jump to line:", err);
-    alert(err.message || "Failed to jump to line");
+    warningMessage.value = err.message || "Failed to jump to line";
+    showWarning.value = true;
   }
 };
 
@@ -645,7 +661,8 @@ const handleVisibility = async () => {
     console.log(`Visibility set to: ${isVisible.value}`);
   } catch (err) {
     console.error("Failed to set visibility:", err);
-    alert(err.message || "Failed to set visibility");
+    warningMessage.value = err.message || "Failed to set visibility";
+    showWarning.value = true;
     // Revert the state if API call fails
     isVisible.value = !isVisible.value;
     savePreferences();

@@ -38,6 +38,17 @@ const routes = [
     name: "DictionaryManager",
     component: DictionaryManager,
   },
+  // ------- EXCEPTIONS -------
+  // Catch-all redirect for /Library without userId
+  {
+    path: "/Library",
+    redirect: { name: "Home" },
+  },
+  // Catch-all for 404s
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: { name: "Home" },
+  },
 ];
 
 const router = createRouter({
@@ -63,7 +74,7 @@ router.beforeEach((to, from, next) => {
     // Check if user is trying to access their own resources
     if (to.params.userId && to.params.userId !== userStore.userId) {
       console.log("User trying to access another user's resources");
-      alert("You can only access your own content!");
+      // Redirect to user's own library - warning will be shown in component
       next({ name: "Library", params: { userId: userStore.userId } });
       return;
     }
