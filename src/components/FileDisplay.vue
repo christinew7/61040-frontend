@@ -69,7 +69,7 @@ const firstLine = computed(() => {
 
 .file-display:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--color-primary);
 }
 .image-container {
   width: 100%;

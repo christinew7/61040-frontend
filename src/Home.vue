@@ -144,7 +144,7 @@ onMounted(() => {
 .title {
   font-size: 3rem;
   margin: 0;
-  color: var(--color-text-dark);
+  color: var(--color-secondary-darker);
 }
 .subtitle {
   margin-top: 0.5rem;

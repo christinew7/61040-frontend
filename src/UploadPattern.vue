@@ -62,6 +62,13 @@ import { startTrackingUsingLLM } from "./api/FileTracker";
 const router = useRouter();
 const route = useRoute();
 
+const props = defineProps({
+  userId: {
+    type: String,
+    required: true,
+  },
+});
+
 const patternName = ref("");
 const patternContent = ref("");
 const uploading = ref(false);

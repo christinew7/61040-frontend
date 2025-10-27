@@ -51,10 +51,10 @@ const handleClick = (event) => {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border: 2px solid var(--color-primary);
+  border: 2px solid var(--color-primary-dark);
   border-radius: 8px;
   background: var(--color-bg-light);
-  color: var(--color-primary);
+  color: var(--color-primary-dark);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -68,6 +68,7 @@ const handleClick = (event) => {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px var(--color-secondary-light);
 }
 
 .icon-button:active:not(.disabled) {
@@ -76,22 +77,22 @@ const handleClick = (event) => {
 }
 
 .icon-button.primary {
-  background: var(--color-primary);
+  background: var(--color-primary-dark);
   color: white;
 }
 
 .icon-button.primary:hover:not(.disabled) {
-  background: var(--color-primary-dark);
-  border-color: var(--color-primary-dark);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .icon-button.secondary {
-  border-color: var(--color-secondary);
-  color: var(--color-secondary);
+  border-color: var(--color-secondary-dark);
+  color: var(--color-secondary-dark);
 }
 
 .icon-button.secondary:hover:not(.disabled) {
-  background: var(--color-secondary);
+  background: var(--color-secondary-dark);
   color: white;
 }
 
