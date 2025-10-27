@@ -21,6 +21,9 @@
           </button>
         </div>
       </div>
+      <svg viewBox="0 0 500 500" class="yarnball">
+        <path :d="yarnballPath" fill="currentColor" />
+      </svg>
     </nav>
   </header>
 </template>
@@ -28,6 +31,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { useUserStore } from "../stores/userStore";
+import { yarnballPath } from "../assets/yarnballPath.js";
 
 const props = defineProps({
   userId: {
@@ -54,7 +58,7 @@ header {
 
 .navbar {
   background: var(--color-bg-light);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--color-primary);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -70,6 +74,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  z-index: 2;
 }
 
 .navbar-brand {
@@ -84,7 +89,7 @@ header {
 .brand-name {
   font-size: 1.5rem;
   margin: 0;
-  color: var(--color-primary);
+  color: var(--color-primary-dark);
   font-weight: 700;
 }
 
@@ -115,7 +120,7 @@ header {
 
 .nav-button {
   padding: 0.5rem 1rem;
-  background-color: var(--color-secondary);
+  background-color: var(--color-secondary-dark);
   color: white;
   border: none;
   border-radius: 6px;
@@ -125,7 +130,8 @@ header {
 }
 
 .nav-button:hover {
-  background-color: #92b8d8;
+  background-color: var(--color-secondary);
+  color: var(--color-text-dark);
 }
 
 @media (max-width: 768px) {
@@ -138,6 +144,26 @@ header {
     width: 100%;
     justify-content: center;
     flex-wrap: wrap;
+  }
+}
+
+.yarnball {
+  position: absolute;
+  bottom: 0px;
+  left: -80px; /* start off-screen */
+  width: 50px; /* adjust as needed */
+  height: auto;
+  animation: rollAcross 12s linear infinite;
+  z-index: 1;
+  color: var(--color-primary-dark);
+}
+
+@keyframes rollAcross {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  100% {
+    transform: translateX(110vw) rotate(720deg);
   }
 }
 </style>
