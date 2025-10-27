@@ -44,7 +44,7 @@
           <IconButton
             :icon="isVisible ? '💡' : '🌙'"
             label=""
-            :aria-label="isVisible ? 'Hide pattern' : 'Show pattern'"
+            :aria-label="isVisible ? 'Show pattern' : 'Hide pattern'"
             variant="primary"
             @click="handleVisibility"
           ></IconButton>
@@ -69,7 +69,8 @@
                 <span
                   v-if="segment.isAbbreviation"
                   class="abbreviation"
-                  @click.stop="showAbbreviationTooltip($event, segment.text)"
+                  @mouseenter="showAbbreviationTooltip($event, segment.text)"
+                  @mouseleave="hideAbbreviationTooltip"
                 >
                   {{ segment.text }}
                 </span>
@@ -79,19 +80,12 @@
           </div>
 
           <!-- Tooltip for abbreviation expansion -->
-          <div
-            v-if="tooltipVisible"
-            class="abbreviation-tooltip"
-            :style="{
-              top: tooltipPosition.y + 'px',
-              left: tooltipPosition.x + 'px',
-            }"
-          >
-            <div class="tooltip-content">
-              <div class="tooltip-abbr">{{ tooltipData.abbr }}</div>
-              <div class="tooltip-full">{{ tooltipData.full }}</div>
-            </div>
-          </div>
+          <AbbreviationTooltip
+            :show="tooltipVisible"
+            :abbreviation="tooltipData.abbr"
+            :fullText="tooltipData.full"
+            :position="tooltipPosition"
+          />
 
           <aside
             v-if="isVisible"
@@ -131,6 +125,7 @@ import NavBar from "./components/NavBar.vue";
 import PrimaryButton from "./components/PrimaryButton.vue";
 import IconButton from "./components/IconButton.vue";
 import Warning from "./components/Warning.vue";
+import AbbreviationTooltip from "./components/AbbreviationTooltip.vue";
 import { getFileString } from "./api/Library";
 import {
   jumpTo,
@@ -168,6 +163,7 @@ const patternLanguage = ref("US"); // What language the pattern is written in
 const translatePattern = ref(false); // Whether to translate or not
 const isVisible = ref(true); // Track visibility state
 const translating = ref(false); // Track if translation is in progress
+const dataLoaded = ref(false); // Track if pattern data has been loaded
 
 // Tooltip state for abbreviation expansion
 const tooltipVisible = ref(false);
@@ -180,6 +176,10 @@ const warningMessage = ref("");
 
 // Create a unique key for localStorage based on user and file
 const getStorageKey = (key) => `pattern_${props.userId}_${props.fileId}_${key}`;
+
+// Get cache key for translated patterns
+const getTranslationCacheKey = (targetLang) =>
+  `pattern_${props.userId}_${props.fileId}_translated_${targetLang}`;
 
 // Load saved preferences from localStorage
 const loadSavedPreferences = () => {
@@ -208,6 +208,41 @@ const loadSavedPreferences = () => {
   }
 };
 
+// Load cached translation from localStorage
+const loadCachedTranslation = (targetLang) => {
+  try {
+    const cacheKey = getTranslationCacheKey(targetLang);
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const parsedCache = JSON.parse(cached);
+      console.log(
+        `Loaded cached translation to ${targetLang}:`,
+        parsedCache.lines.length,
+        "lines"
+      );
+      return parsedCache.lines;
+    }
+  } catch (err) {
+    console.error("Failed to load cached translation:", err);
+  }
+  return null;
+};
+
+// Save translated pattern to localStorage
+const saveCachedTranslation = (targetLang, translatedLines) => {
+  try {
+    const cacheKey = getTranslationCacheKey(targetLang);
+    const cacheData = {
+      lines: translatedLines,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+    console.log(`Saved translated pattern cache for ${targetLang}`);
+  } catch (err) {
+    console.error("Failed to save cached translation:", err);
+  }
+};
+
 // Save preferences to localStorage
 const savePreferences = () => {
   try {
@@ -230,9 +265,6 @@ const fetchPattern = async () => {
   error.value = "";
 
   try {
-    // Load saved preferences before fetching pattern
-    loadSavedPreferences();
-
     const result = await getFileString(props.userId, props.fileId);
     console.log("Pattern data:", result);
 
@@ -253,6 +285,12 @@ const fetchPattern = async () => {
     // Fetch the current tracking index
     await fetchCurrentIndex();
     await fetchVisibility();
+
+    // Load saved preferences AFTER pattern data is loaded
+    loadSavedPreferences();
+
+    // Mark data as loaded
+    dataLoaded.value = true;
   } catch (err) {
     console.error("Failed to fetch pattern:", err);
     error.value = err.message || "Failed to load pattern";
@@ -280,58 +318,102 @@ const fetchVisibility = async () => {
     const result = await getVisibility(props.userId, props.fileId);
     console.log("Visibility result:", result);
 
-    // api returns visibility data
-    // Only update from API if no local preference is saved
+    // Check if we have a saved preference in localStorage first
     const savedVisibility = localStorage.getItem(getStorageKey("visibility"));
-    if (savedVisibility === null) {
+
+    if (savedVisibility !== null) {
+      // localStorage takes precedence - will be loaded by loadSavedPreferences()
+      console.log("Using localStorage visibility preference");
+      return;
+    }
+    // No localStorage preference - use API's has a value
+    if (result && result.visible !== undefined) {
       isVisible.value = result.visible;
+      console.log("Using API visibility:", result.visible);
     }
   } catch (err) {
     console.error("Failed to fetch visibility:", err);
-    // Don't set error, just log it - default to visible
+    // On error, keep the default true value
+    isVisible.value = true;
   }
 };
 
 // Parse a line to identify abbreviations that can be expanded
 const parseLineForAbbreviations = (line) => {
   const segments = [];
-  // Split by spaces while preserving them
-  const words = line.split(/(\s+)/);
 
-  for (const word of words) {
-    if (!word) continue;
+  // Multi-word abbreviations to check first (order matters - check longer phrases first)
+  const multiWordAbbreviations = ["inv dec", "inv inc"];
 
-    // Check if it's whitespace
-    if (/^\s+$/.test(word)) {
-      segments.push({ text: word, isAbbreviation: false });
+  // Common single-word crochet abbreviations
+  const singleWordAbbreviations = [
+    "ch",
+    "sc",
+    "dc",
+    "tr",
+    "hdc",
+    "dtr",
+    "ss",
+    "sl",
+    "st",
+    "sts",
+    "sp",
+    "inc",
+    "dec",
+    "yo",
+    "sk",
+    "rep",
+    "mr",
+  ];
+
+  let remainingLine = line;
+  let currentIndex = 0;
+
+  while (currentIndex < line.length) {
+    let matched = false;
+
+    // Check for multi-word abbreviations first
+    for (const multiAbbr of multiWordAbbreviations) {
+      const restOfLine = line.slice(currentIndex);
+      const pattern = new RegExp(
+        `^([*\\d]*)(${multiAbbr.replace(" ", "\\s+")})(\\s|[.,;:!?]|$)`,
+        "i"
+      );
+      const match = restOfLine.match(pattern);
+
+      if (match) {
+        const [fullMatch, prefix, abbr, suffix] = match;
+        const matchLength = prefix.length + abbr.length;
+
+        segments.push({
+          text: prefix + abbr,
+          isAbbreviation: true,
+        });
+
+        currentIndex += matchLength;
+        matched = true;
+        break;
+      }
+    }
+
+    if (matched) continue;
+
+    // Check for single words
+    const restOfLine = line.slice(currentIndex);
+    const wordMatch = restOfLine.match(/^(\s+)/);
+
+    if (wordMatch) {
+      // It's whitespace
+      segments.push({ text: wordMatch[0], isAbbreviation: false });
+      currentIndex += wordMatch[0].length;
       continue;
     }
 
     // Match patterns like: *tr, 2tr, tr, trs, etc.
-    const match = word.match(/^([*\d]*)([a-zA-Z]+)(.*)$/);
-    if (match) {
-      const [, prefix, actualWord, suffix] = match;
+    const abbrMatch = restOfLine.match(/^([*\d]*)([a-zA-Z]+)/);
+    if (abbrMatch) {
+      const [fullMatch, prefix, actualWord] = abbrMatch;
       const lowerWord = actualWord.toLowerCase();
-
-      // Common crochet abbreviations to highlight
-      const commonAbbreviations = [
-        "ch",
-        "sc",
-        "dc",
-        "tr",
-        "hdc",
-        "dtr",
-        "ss",
-        "sl",
-        "st",
-        "sts",
-        "sp",
-        "inc",
-        "dec",
-        "yo",
-        "sk",
-        "rep",
-      ];
 
       // Check if base word (without 's') is an abbreviation
       let baseWord = lowerWord;
@@ -340,16 +422,21 @@ const parseLineForAbbreviations = (line) => {
       }
 
       if (
-        commonAbbreviations.includes(baseWord) ||
-        commonAbbreviations.includes(lowerWord)
+        singleWordAbbreviations.includes(baseWord) ||
+        singleWordAbbreviations.includes(lowerWord)
       ) {
-        segments.push({ text: word, isAbbreviation: true });
+        segments.push({ text: fullMatch, isAbbreviation: true });
       } else {
-        segments.push({ text: word, isAbbreviation: false });
+        segments.push({ text: fullMatch, isAbbreviation: false });
       }
-    } else {
-      segments.push({ text: word, isAbbreviation: false });
+
+      currentIndex += fullMatch.length;
+      continue;
     }
+
+    // Not a word or abbreviation, just take the next character
+    segments.push({ text: line[currentIndex], isAbbreviation: false });
+    currentIndex++;
   }
 
   return segments;
@@ -360,7 +447,63 @@ const showAbbreviationTooltip = async (event, abbr) => {
   console.log("Abbreviation clicked:", abbr);
   event.stopPropagation();
 
-  // Extract just the letters from the abbreviation (remove prefix/suffix)
+  // Check if it's a multi-word abbreviation (contains space)
+  if (abbr.includes(" ") || /\s/.test(abbr)) {
+    // Multi-word abbreviation - look it up as-is
+    const cleanAbbr = abbr.trim().toLowerCase();
+
+    try {
+      const fullForm = await translateAbbreviationFromL2(
+        "abbreviation",
+        cleanAbbr
+      );
+
+      if (fullForm && fullForm.trim() !== "") {
+        tooltipData.value = {
+          abbr: abbr.trim(),
+          full: fullForm,
+        };
+      } else {
+        tooltipData.value = {
+          abbr: abbr.trim(),
+          full: "No definition available (add to dictionary)",
+        };
+      }
+
+      // Position tooltip
+      const targetElement = event.target;
+      const rect = targetElement.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+
+      tooltipPosition.value = {
+        x: centerX,
+        y: rect.top - 10,
+      };
+
+      tooltipVisible.value = true;
+      return;
+    } catch (err) {
+      console.log("No expansion found for multi-word:", cleanAbbr, err);
+      tooltipData.value = {
+        abbr: abbr.trim(),
+        full: "No definition available (add to dictionary)",
+      };
+
+      const targetElement = event.target;
+      const rect = targetElement.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+
+      tooltipPosition.value = {
+        x: centerX,
+        y: rect.top - 10,
+      };
+
+      tooltipVisible.value = true;
+      return;
+    }
+  }
+
+  // Single-word abbreviation - extract just the letters from the abbreviation (remove prefix/suffix)
   const match = abbr.match(/^([*\d]*)([a-zA-Z]+)(.*)$/);
   if (!match) {
     console.log("No match found for:", abbr);
@@ -397,28 +540,36 @@ const showAbbreviationTooltip = async (event, abbr) => {
 
     if (fullForm && fullForm.trim() !== "") {
       let displayFull = fullForm;
+      let displayAbbr = actualWord; // Show only the letter part, not prefix/suffix
+
       if (hasPlural) {
         displayFull = fullForm + "s";
+        // Keep the 's' in the abbreviation display too
+        displayAbbr = actualWord;
       }
 
       tooltipData.value = {
-        abbr: abbr,
+        abbr: displayAbbr,
         full: displayFull,
       };
 
-      // Position tooltip near the click
+      // Position tooltip centered above the clicked abbreviation
+      // Get the clicked element's position
+      const targetElement = event.target;
+      const rect = targetElement.getBoundingClientRect();
+
+      // Calculate center of the abbreviation
+      const centerX = rect.left + rect.width / 2;
+
+      // Position above the text with some spacing
+      // Note: We'll use transform in CSS to center horizontally
       tooltipPosition.value = {
-        x: event.clientX + 10,
-        y: event.clientY + 10,
+        x: centerX,
+        y: rect.top - 10, // 10px above the text
       };
 
       tooltipVisible.value = true;
       console.log("Tooltip should be visible now");
-
-      // Auto-hide after 3 seconds
-      setTimeout(() => {
-        tooltipVisible.value = false;
-      }, 3000);
     } else {
       console.log("Expansion was empty or undefined");
     }
@@ -426,13 +577,18 @@ const showAbbreviationTooltip = async (event, abbr) => {
     console.log("No expansion found for:", baseWord, err);
     // Show tooltip anyway with "No definition available"
     tooltipData.value = {
-      abbr: abbr,
+      abbr: actualWord, // Show only the letter part, not prefix/suffix
       full: "No definition available (add to dictionary)",
     };
 
+    // Position tooltip centered above the clicked abbreviation
+    const targetElement = event.target;
+    const rect = targetElement.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+
     tooltipPosition.value = {
-      x: event.clientX + 10,
-      y: event.clientY + 10,
+      x: centerX,
+      y: rect.top - 10,
     };
 
     tooltipVisible.value = true;
@@ -441,6 +597,10 @@ const showAbbreviationTooltip = async (event, abbr) => {
       tooltipVisible.value = false;
     }, 3000);
   }
+};
+
+const hideAbbreviationTooltip = async () => {
+  tooltipVisible.value = false;
 };
 
 // Translate a single line by replacing terms word by word
@@ -575,6 +735,31 @@ const applyTranslation = async () => {
 
   translating.value = true;
   try {
+    // Determine target language (opposite of pattern language)
+    const targetLang = patternLanguage.value === "US" ? "UK" : "US";
+
+    console.log(
+      `Attempting to translate from ${patternLanguage.value} to ${targetLang}`
+    );
+
+    // Try to load from cache first
+    const cachedTranslation = loadCachedTranslation(targetLang);
+    if (
+      cachedTranslation &&
+      cachedTranslation.length === originalPatternLines.value.length
+    ) {
+      console.log(
+        `✓ Using cached translation to ${targetLang} (${cachedTranslation.length} lines)`
+      );
+      patternLines.value = cachedTranslation;
+      translating.value = false;
+      return;
+    }
+
+    // No cache found, perform translation
+    console.log(
+      `No valid cache found, translating from ${patternLanguage.value} to ${targetLang}...`
+    );
     const translatedLines = [];
     let translatedCount = 0;
     let failedCount = 0;
@@ -594,6 +779,10 @@ const applyTranslation = async () => {
     }
 
     patternLines.value = translatedLines;
+
+    // Save the translation to cache
+    saveCachedTranslation(targetLang, translatedLines);
+
     console.log(
       `Translation complete. Translated: ${translatedCount}, Failed: ${failedCount}, Total lines: ${originalPatternLines.value.length}`
     );
@@ -709,6 +898,12 @@ watch(currentIndex, () => {
 
 // Watch for translation setting changes
 watch([translatePattern, patternLanguage], async () => {
+  // Only trigger if data is loaded
+  if (!dataLoaded.value) {
+    console.log("Data not loaded yet, skipping translation");
+    return;
+  }
+
   // Save preferences when they change
   savePreferences();
   await applyTranslation();
@@ -717,6 +912,10 @@ watch([translatePattern, patternLanguage], async () => {
 onMounted(async () => {
   await fetchPattern();
   await updateControlsPosition();
+  // Apply translation if it was enabled in preferences
+  if (translatePattern.value) {
+    await applyTranslation();
+  }
 });
 </script>
 
@@ -903,58 +1102,13 @@ onMounted(async () => {
 
 .abbreviation {
   color: var(--color-dark);
-  text-decoration: underline;
-  text-decoration-style: dotted;
+  text-decoration: underline dotted;
   cursor: help;
-  /* font-weight: 600; */
   transition: all 0.2s ease;
 }
 
 .abbreviation:hover {
   background-color: rgba(247, 202, 201, 0.2);
   text-decoration-style: solid;
-}
-
-.abbreviation-tooltip {
-  position: fixed;
-  background: var(--color-bg-light);
-  border: 2px solid var(--color-primary);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  pointer-events: none;
-  animation: tooltipFadeIn 0.2s ease-out;
-  max-width: 250px;
-}
-
-@keyframes tooltipFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.tooltip-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.tooltip-abbr {
-  font-family: "Courier New", monospace;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--color-primary);
-}
-
-.tooltip-full {
-  font-size: 0.85rem;
-  color: var(--color-text-dark);
-  font-weight: 500;
 }
 </style>
