@@ -1,7 +1,11 @@
 <template>
   <div v-if="show" class="warning-container">
     <div class="warning-box">
-      <div class="warning-icon">⚠️</div>
+      <img
+        src="../assets/warning-outline.svg"
+        alt="Warning"
+        class="warning-icon"
+      />
       <div class="warning-content">
         <h3 v-if="title" class="warning-title">{{ title }}</h3>
         <p class="warning-message">{{ message }}</p>
@@ -48,7 +52,7 @@ defineEmits(["close"]);
 
 .warning-box {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   background-color: var(--color-tertiary);
   border: 2px solid var(--color-tertiary-dark);
@@ -70,9 +74,12 @@ defineEmits(["close"]);
 }
 
 .warning-icon {
-  font-size: 24px;
-  line-height: 1;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
+  /* Green color filter for SVG */
+  filter: invert(28%) sepia(12%) saturate(1850%) hue-rotate(94deg)
+    brightness(95%) contrast(88%);
 }
 
 .warning-content {
@@ -83,13 +90,13 @@ defineEmits(["close"]);
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #0c1a14;
+  color: #2d5a3d;
 }
 
 .warning-message {
   margin: 0;
   font-size: 14px;
-  color: #0c1a14;
+  color: #2d5a3d;
   line-height: 1.5;
 }
 
@@ -97,7 +104,7 @@ defineEmits(["close"]);
   background: none;
   border: none;
   font-size: 24px;
-  color: #0c1a14;
+  color: #2d5a3d;
   cursor: pointer;
   padding: 0;
   width: 24px;
