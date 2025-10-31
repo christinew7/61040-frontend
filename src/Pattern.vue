@@ -102,6 +102,7 @@
               variant="primary"
               :disabled="currentIndex <= 1"
               @click="handleBack"
+              @keyup.down="handleBack"
             />
             <IconButton
               icon="↓"
@@ -110,6 +111,7 @@
               variant="primary"
               :disabled="currentIndex >= patternLines.length"
               @click="handleNext"
+              @keyup.up="handleNext"
             />
           </aside>
         </div>
@@ -119,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "./components/NavBar.vue";
 import PrimaryButton from "./components/PrimaryButton.vue";
@@ -347,6 +349,7 @@ const parseLineForAbbreviations = (line) => {
 
   // Common single-word crochet abbreviations
   const singleWordAbbreviations = [
+    "slst",
     "ch",
     "sc",
     "dc",
@@ -847,6 +850,11 @@ const handleVisibility = async () => {
     // Call the API to update visibility on the backend
     await setVisibility(props.userId, props.fileId, isVisible.value);
 
+    // If turning visibility on, scroll to current line
+    if (isVisible.value) {
+      await updateControlsPosition();
+    }
+
     console.log(`Visibility set to: ${isVisible.value}`);
   } catch (err) {
     console.error("Failed to set visibility:", err);
@@ -855,6 +863,43 @@ const handleVisibility = async () => {
     // Revert the state if API call fails
     isVisible.value = !isVisible.value;
     savePreferences();
+  }
+};
+
+// Handle keyboard navigation
+const handleKeyDown = async (event) => {
+  // Only handle arrow keys when visibility is on
+  if (!isVisible.value) return;
+
+  // Don't handle if an input, select, or textarea is focused (but allow buttons)
+  const activeElement = document.activeElement;
+  if (
+    activeElement &&
+    (activeElement.tagName === "INPUT" ||
+      activeElement.tagName === "SELECT" ||
+      activeElement.tagName === "TEXTAREA")
+  ) {
+    return;
+  }
+
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    // Blur any focused button to remove focus highlight
+    if (activeElement && activeElement.tagName === "BUTTON") {
+      activeElement.blur();
+    }
+    if (currentIndex.value > 1) {
+      await handleBack();
+    }
+  } else if (event.key === "ArrowDown") {
+    event.preventDefault();
+    // Blur any focused button to remove focus highlight
+    if (activeElement && activeElement.tagName === "BUTTON") {
+      activeElement.blur();
+    }
+    if (currentIndex.value < patternLines.value.length) {
+      await handleNext();
+    }
   }
 };
 
@@ -916,6 +961,14 @@ onMounted(async () => {
   if (translatePattern.value) {
     await applyTranslation();
   }
+
+  // Add keyboard event listener
+  window.addEventListener("keydown", handleKeyDown);
+});
+
+onBeforeUnmount(() => {
+  // Remove keyboard event listener
+  window.removeEventListener("keydown", handleKeyDown);
 });
 </script>
 
@@ -1026,9 +1079,10 @@ onMounted(async () => {
 
 .content {
   flex: 1;
-  font-family: "Courier New", monospace;
+  font-family: "Fragment Mono", monospace;
   line-height: 1.6;
   max-width: calc(100% - 120px);
+  text-align: left;
 }
 
 .navigation-controls {
