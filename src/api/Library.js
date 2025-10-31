@@ -39,7 +39,7 @@ export async function deleteLibrary(owner) {
  * @desc Creates a File with the current DateTime and empty items, and adds it to this owner's Library.
  */
 export async function createFile(owner) {
-//   if (typeof owner !== "string") throw new TypeError("owner must be a string");
+  //   if (typeof owner !== "string") throw new TypeError("owner must be a string");
   try {
     const response = await api.post("/createFile", { owner });
     return response.data.id;
@@ -154,5 +154,41 @@ export async function getFileString(owner, file) {
     return response.data; // array of { fileString: string }
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to get file string");
+  }
+}
+
+/**
+ * @route POST /api/Library/setImageToFile
+ * @desc Sets the image field of this file to image.
+ */
+export async function setImageToFile(owner, file, image) {
+  if (
+    typeof owner !== "string" ||
+    typeof file !== "string" ||
+    typeof image !== "string"
+  ) {
+    throw new TypeError("owner, file, and image must be strings");
+  }
+  try {
+    await api.post("/setImageToFile", { owner, file, image });
+  } catch (err) {
+    throw new Error(err.response?.data?.error || "Failed to set image to file");
+  }
+}
+
+/**
+ * @route POST /api/Library/clearImageFromFile
+ * @desc Clears the image field of this file (sets to null).
+ */
+export async function clearImageFromFile(owner, file) {
+  if (typeof owner !== "string" || typeof file !== "string") {
+    throw new TypeError("owner and file must be strings");
+  }
+  try {
+    await api.post("/clearImageFromFile", { owner, file });
+  } catch (err) {
+    throw new Error(
+      err.response?.data?.error || "Failed to clear image from file"
+    );
   }
 }
