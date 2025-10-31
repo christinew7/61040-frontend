@@ -47,7 +47,6 @@ defineProps({
   pointer-events: none;
   animation: tooltipFadeIn 0.2s ease-out;
   max-width: 250px;
-  /* Center the tooltip horizontally above the text */
   transform: translate(-50%, -100%);
 }
 
@@ -69,15 +68,16 @@ defineProps({
 }
 
 .tooltip-abbr {
-  font-family: "Courier New", monospace;
+  font-family: "Fragment Mono", monospace;
   font-weight: 700;
   font-size: 0.9rem;
   color: var(--color-primary-dark);
 }
 
 .tooltip-full {
+  font-family: "Fragment Mono", monospace;
   font-size: 0.85rem;
   color: var(--color-text-dark);
-  font-weight: 500;
+  font-weight: 300;
 }
 </style>
