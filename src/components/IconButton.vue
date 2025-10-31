@@ -52,7 +52,7 @@ const handleClick = (event) => {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border: 2px solid var(--color-primary-dark);
+  /* border: 2px solid var(--color-primary-dark); */
   border-radius: 8px;
   background: var(--color-bg-light);
   color: var(--color-primary-darkest);
@@ -81,13 +81,14 @@ const handleClick = (event) => {
 }
 
 .icon-button.primary {
-  background: var(--color-primary-dark);
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary);
   color: var(--color-primary-darkest);
 }
 
 .icon-button.primary:hover:not(.disabled) {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
   font-weight: bold;
   letter-spacing: 0.02em;
   text-shadow: 0.5px 0 0 currentColor;

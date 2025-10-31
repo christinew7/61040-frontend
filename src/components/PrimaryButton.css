@@ -37,7 +37,6 @@
 
 .primary-button.variant-secondary:hover:not(:disabled) {
   background: var(--color-secondary-dark);
-
   color: var(--color-secondary-darkest);
   /* color: var(--color-text-dark); */
 }

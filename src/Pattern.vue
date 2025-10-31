@@ -138,7 +138,6 @@ import {
   getVisibility,
 } from "./api/FileTracker";
 import { translateTermFromL1, translateTermFromL2 } from "./api/Dictionary";
-import { translateTermFromL1 as translateAbbreviationFromL1 } from "./api/Dictionary";
 import { translateTermFromL2 as translateAbbreviationFromL2 } from "./api/Dictionary";
 
 const router = useRouter();
@@ -217,11 +216,7 @@ const loadCachedTranslation = (targetLang) => {
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       const parsedCache = JSON.parse(cached);
-      console.log(
-        `Loaded cached translation to ${targetLang}:`,
-        parsedCache.lines.length,
-        "lines"
-      );
+
       return parsedCache.lines;
     }
   } catch (err) {
@@ -268,8 +263,6 @@ const fetchPattern = async () => {
 
   try {
     const result = await getFileString(props.userId, props.fileId);
-    console.log("Pattern data:", result);
-
     if (result?.fileString) {
       const lines = JSON.parse(result.fileString);
 
@@ -868,9 +861,6 @@ const handleVisibility = async () => {
 
 // Handle keyboard navigation
 const handleKeyDown = async (event) => {
-  // Only handle arrow keys when visibility is on
-  if (!isVisible.value) return;
-
   // Don't handle if an input, select, or textarea is focused (but allow buttons)
   const activeElement = document.activeElement;
   if (
@@ -881,6 +871,16 @@ const handleKeyDown = async (event) => {
   ) {
     return;
   }
+
+  // Handle 'n' key for toggling visibility
+  if (event.key === "n" || event.key === "N") {
+    event.preventDefault();
+    await handleVisibility();
+    return;
+  }
+
+  // Only handle arrow keys when visibility is on
+  if (!isVisible.value) return;
 
   if (event.key === "ArrowUp") {
     event.preventDefault();
@@ -1029,12 +1029,12 @@ onBeforeUnmount(() => {
 
 .language-selector select {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-primary-dark);
   border-radius: 6px;
   font-family: inherit;
   font-size: 0.9rem;
   color: var(--color-text-dark);
-  background-color: white;
+  background-color: var(--color-bg-light);
   cursor: pointer;
 }
 
@@ -1063,6 +1063,29 @@ onBeforeUnmount(() => {
   width: 18px;
   height: 18px;
   cursor: pointer;
+  appearance: none;
+  border: 2px solid var(--color-primary-dark);
+  border-radius: 3px;
+  background-color: var(--color-bg-light);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: var(--color-primary-darkest);
+  font-size: 13px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1;
 }
 
 .checkbox-label span {
@@ -1128,7 +1151,7 @@ onBeforeUnmount(() => {
   word-wrap: break-word;
   cursor: pointer;
   border-radius: 4px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .line.dimmed {
@@ -1141,8 +1164,16 @@ onBeforeUnmount(() => {
   cursor: help;
 }
 
+/* Gray out non-current lines when there's a current line */
+.content:has(.current-line) .line:not(.current-line):not(.dimmed) {
+  color: var(--color-gray);
+  opacity: 0.9;
+}
+
 .line:hover:not(.current-line):not(.dimmed) {
   background-color: rgba(179, 206, 229, 0.2); /* Light blue hover */
+  opacity: 1;
+  color: var(--color-text-dark);
 }
 
 .line.current-line {
@@ -1152,6 +1183,10 @@ onBeforeUnmount(() => {
   border-radius: 12px;
   margin: 0.25rem 0;
   cursor: pointer;
+  opacity: 1;
+  color: var(--color-text-dark);
+  letter-spacing: 0.02em;
+  text-shadow: 0.5px 0 0 currentColor;
 }
 
 .abbreviation {
