@@ -8,7 +8,11 @@ Bobbert opens the CrochetBuddy app and signs up to land in the first-time user w
 
 ### Screen Recording
 
-[Screen Recording](/assets/Screen%20Recording%202025-10-21%20at%209.54.16 PM.mov)
+[Screen Recording](https://drive.google.com/file/d/1zUiP8inxS-J5SXOFkyfJ0hPgkC4pYLhn/view?usp=sharing)
+
+### Visual Design Study
+
+[Visual Design Study](/assets/VisualDesignStudy.md)
 
 ## Getting started
 
