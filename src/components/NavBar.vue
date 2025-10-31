@@ -15,11 +15,15 @@
           </router-link>
         </div>
 
-        <div class="navbar-menu">
-          <button v-if="userId" @click="handleLogout" class="nav-button">
+        <section class="navbar-menu">
+          <PrimaryButton
+            v-if="userId"
+            @click="handleLogout"
+            variant="secondary"
+          >
             Logout
-          </button>
-        </div>
+          </PrimaryButton>
+        </section>
       </div>
       <svg viewBox="0 0 500 500" class="yarnball">
         <path :d="yarnballPath" fill="currentColor" />
@@ -32,6 +36,7 @@
 import { useRouter } from "vue-router";
 import { useUserStore } from "../stores/userStore";
 import { yarnballPath } from "../assets/yarnballPath.js";
+import PrimaryButton from "./PrimaryButton.vue";
 
 const props = defineProps({
   userId: {
@@ -97,6 +102,7 @@ header {
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  z-index: 2;
 }
 
 .nav-link {
@@ -118,22 +124,6 @@ header {
   color: white;
 }
 
-.nav-button {
-  padding: 0.5rem 1rem;
-  background-color: var(--color-secondary-dark);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.nav-button:hover {
-  background-color: var(--color-secondary);
-  color: var(--color-text-dark);
-}
-
 @media (max-width: 768px) {
   .navbar-container {
     flex-direction: column;
@@ -150,11 +140,12 @@ header {
 .yarnball {
   position: absolute;
   bottom: 0px;
-  left: -80px; /* start off-screen */
-  width: 50px; /* adjust as needed */
+  /* left -80 if width 50 */
+  left: -40px;
+  width: 35px;
   height: auto;
-  animation: rollAcross 12s linear infinite;
-  z-index: 1;
+  animation: rollAcross 14s linear infinite;
+  z-index: 0;
   color: var(--color-primary-dark);
 }
 
