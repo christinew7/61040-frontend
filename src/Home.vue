@@ -33,7 +33,9 @@
             <PrimaryButton @click="submitAuth">{{
               mode === "login" ? "Log in" : "Sign up"
             }}</PrimaryButton>
-            <PrimaryButton @click="cancelAuth">Cancel</PrimaryButton>
+            <PrimaryButton @click="cancelAuth" variant="gray"
+              >Cancel</PrimaryButton
+            >
           </div>
         </form>
       </section>
@@ -51,7 +53,7 @@
 <script setup>
 import PrimaryButton from "./components/PrimaryButton.vue";
 import Warning from "./components/Warning.vue";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { register, authenticate } from "./api/PasswordAuthentication";
 import { useUserStore } from "./stores/userStore";
@@ -64,6 +66,20 @@ const password = ref("");
 const submitting = ref(false);
 const showWarning = ref(false);
 const warningMessage = ref("");
+
+// Prevent scrolling on the home page
+onMounted(() => {
+  document.body.style.overflow = "hidden";
+
+  if (userStore.isAuthenticated) {
+    router.push({ name: "Library", params: { userId: userStore.userId } });
+  }
+});
+
+// Restore scrolling when leaving the page
+onBeforeUnmount(() => {
+  document.body.style.overflow = "";
+});
 
 function showLogin() {
   mode.value = "login";
@@ -119,40 +135,72 @@ async function submitAuth() {
     submitting.value = false;
   }
 }
-
-// Check if user is already logged in and redirect
-onMounted(() => {
-  if (userStore.isAuthenticated) {
-    router.push({ name: "Library", params: { userId: userStore.userId } });
-  }
-});
 </script>
 
 <style scoped>
 .home {
   padding: 4rem 1.5rem;
-  max-width: 900px;
-  margin: 0 auto;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
+  height: 100vh;
+  max-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--color-bg-light);
+  background-image: radial-gradient(
+      circle at 10% 20%,
+      var(--color-primary) -10%,
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 20% 30%,
+      var(--color-secondary) 0%,
+      transparent 90%
+    ),
+    radial-gradient(circle at 0% 0%, var(--color-secondary) 3%, transparent 50%),
+    radial-gradient(
+      circle at 50% 60%,
+      var(--color-secondary) 0%,
+      transparent 30%
+    ),
+    radial-gradient(
+      ellipse at 60% 30%,
+      var(--color-primary) 0%,
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 70% 10%,
+      var(--color-secondary-light) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 70% 80%,
+      var(--color-primary-light) 0%,
+      transparent 80%
+    ),
+    radial-gradient(circle at 80% 60%, var(--color-primary) 0%, transparent 60%);
 }
 .hero {
   text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
 }
 .title {
   font-size: 3rem;
   margin: 0;
+  margin-bottom: 2rem;
   color: var(--color-secondary-darker);
 }
 .subtitle {
-  margin-top: 0.5rem;
-  color: var(--color-text-dark);
+  margin-top: 2rem;
+  color: var(--color-secondary-darkest);
   opacity: 0.85;
 }
 .actions {
-  margin-top: 2rem;
+  margin-top: 0;
+  margin-bottom: 2rem;
   display: flex;
   gap: 1rem;
   justify-content: center;
@@ -163,11 +211,14 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: var(--color-bg-light);
-  padding: 1rem;
+  /* background: var(--color-gray); */
+  padding: 1.5rem;
   border-radius: 8px;
   min-width: 280px;
   position: relative;
+}
+.auth-window h3 {
+  margin: 0 0 0.5rem 0;
 }
 .auth-window label {
   display: flex;
@@ -177,9 +228,11 @@ onMounted(() => {
 }
 .auth-window input {
   margin-top: 0.25rem;
-  padding: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-gray-light);
   border-radius: 6px;
   border: 1px solid #d1d5db;
+  font-family: "Fragment Mono", monospace;
 }
 .auth-actions {
   display: flex;
