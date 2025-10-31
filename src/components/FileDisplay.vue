@@ -36,10 +36,28 @@ const crochetImages = [
   "https://images.pexels.com/photos/2767667/pexels-photo-2767667.jpeg",
 ];
 
-// Pick a random crochet image
-const imageUrl = computed(() => {
-  const idx = Math.floor(Math.random() * crochetImages.length);
+// Get a consistent random image based on file id
+const getRandomImage = (fileId) => {
+  if (!fileId) {
+    const idx = Math.floor(Math.random() * crochetImages.length);
+    return crochetImages[idx];
+  }
+  // Use file id to consistently pick the same random image for each file
+  const hash = fileId
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const idx = hash % crochetImages.length;
   return crochetImages[idx];
+};
+
+// Use file's image if available, otherwise use random placeholder
+const imageUrl = computed(() => {
+  // If file has an image, use it
+  if (props.file?.image) {
+    return props.file.image;
+  }
+  // Otherwise, use a random crochet image
+  return getRandomImage(props.file?.id);
 });
 
 // Extract the first line from the file's items array
