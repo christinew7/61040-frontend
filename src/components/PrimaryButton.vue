@@ -2,7 +2,7 @@
   <button
     :type="type"
     :disabled="disabled || loading"
-    class="primary-button"
+    :class="['primary-button', variant ? `variant-${variant}` : '']"
     @click="$emit('click')"
     :aria-busy="loading ? 'true' : 'false'"
   >
@@ -22,6 +22,7 @@ defineProps({
   type: { type: String, default: "button" },
   disabled: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
+  variant: { type: String, default: "" }, // e.g., 'secondary'
 });
 
 // Emit events

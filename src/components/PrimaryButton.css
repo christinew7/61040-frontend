@@ -4,17 +4,18 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: var(--color-primary-dark);
-  color: var(--color-text-light);
+  background: var(--color-primary);
+  color: var(--color-primary-darkest);
   border: none;
   border-radius: 6px;
-  font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.05s ease;
+  font-family: "Fragment Mono", sans-serif;
 }
 .primary-button:hover:not(:disabled) {
-  background: var(--color-primary);
-  color: var(--color-text-dark);
+  background: var(--color-primary-dark);
+  color: var(--color-primary-darkest);
+  text-shadow: 0.5px 0 0 currentColor;
 }
 .primary-button:active:not(:disabled) {
   transform: translateY(1px);
@@ -26,4 +27,39 @@
 .spinner {
   font-size: 0.75rem;
   opacity: 0.9;
+}
+
+/* Secondary variant (blue) */
+.primary-button.variant-secondary {
+  background: var(--color-secondary);
+  color: var(--color-secondary-darkest);
+}
+
+.primary-button.variant-secondary:hover:not(:disabled) {
+  background: var(--color-secondary-dark);
+
+  color: var(--color-secondary-darkest);
+  /* color: var(--color-text-dark); */
+}
+
+/* Tertiary variant (green) */
+.primary-button.variant-tertiary {
+  background: var(--color-tertiary);
+  color: var(--color-tertiary-darkest);
+}
+
+.primary-button.variant-tertiary:hover:not(:disabled) {
+  background: var(--color-tertiary-dark);
+  color: var(--color-tertiary-darkest);
+}
+
+/* Gray variant */
+.primary-button.variant-gray {
+  background: var(--color-gray);
+  color: var(--color-gray-darkest);
+}
+
+.primary-button.variant-gray:hover:not(:disabled) {
+  background: var(--color-gray-dark);
+  color: var(--color-gray-darkest);
 }

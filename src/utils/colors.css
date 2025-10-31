@@ -2,12 +2,18 @@
   --color-primary: #f7cac9;
   --color-primary-dark: #fc9a98;
   --color-primary-light: #fceded;
+  --color-primary-darkest: #470e0b;
   --color-secondary: #b3cee5;
   --color-secondary-dark: #84b5e0;
   --color-secondary-darker: #397097;
+  --color-secondary-darkest: #05121c;
   --color-secondary-light: #c9dff7;
   --color-tertiary: #87d4b2;
   --color-tertiary-dark: #6caa8f;
+
+  --color-gray: #d7d4d4;
+  --color-gray-dark: #b3acac;
+  --color-gray-darkest: #272222;
 
   --color-text-light: #ffffff;
   --color-text-dark: #111827;
