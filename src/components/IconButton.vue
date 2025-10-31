@@ -52,7 +52,7 @@ const handleClick = (event) => {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  /* border: 2px solid var(--color-primary-dark); */
+  border: 2px solid var(--color-primary-dark);
   border-radius: 8px;
   background: var(--color-bg-light);
   color: var(--color-primary-darkest);
@@ -95,7 +95,7 @@ const handleClick = (event) => {
 }
 
 .icon-button.secondary {
-  border-color: var(--color-secondary);
+  border: 2px solid var(--color-secondary);
   background: var(--color-secondary);
   color: var(--color-secondary-darkest);
 }
@@ -110,7 +110,7 @@ const handleClick = (event) => {
 }
 
 .icon-button.gray {
-  border-color: var(--color-gray);
+  border: 2px solid var(--color-gray);
   background: var(--color-gray);
   color: var(--color-gray-darkest);
 }
