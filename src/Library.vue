@@ -165,6 +165,7 @@ const fetchAllFiles = async () => {
           id: file._id,
           title: file.items[0],
           items: file.items,
+          image: file.image || null, // Include image if available
         }))
         .reverse();
     } catch (err) {
@@ -196,6 +197,7 @@ function viewPattern(file) {
 .library {
   max-width: 960px;
   margin: 0 auto;
+  padding: 1rem;
 }
 .hero {
   text-align: center;
