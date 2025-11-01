@@ -1,5 +1,5 @@
 <template>
-  <NavBar :userId="userId" />
+  <NavBar :userId="userId" class="navbar" />
   <main class="upload-pattern">
     <header class="header">
       <h1 class="title">Upload Pattern</h1>
@@ -221,6 +221,7 @@ async function handleUpload() {
 }
 
 function handleCancel() {
+  showWarning.value = false;
   const userId = route.params.userId;
   if (userId) {
     router.push({ name: "Library", params: { userId } });

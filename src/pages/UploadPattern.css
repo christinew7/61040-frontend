@@ -1,3 +1,6 @@
+.navbar {
+  position: sticky;
+}
 .upload-pattern {
   padding: 3rem 1.5rem;
   max-width: 800px;

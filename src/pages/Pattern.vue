@@ -4,7 +4,7 @@
     :message="warningMessage"
     @close="showWarning = false"
   />
-  <NavBar :userId="userId" />
+  <NavBar :userId="userId" class="navbar" />
   <main class="pattern">
     <header class="header">
       <h1 class="title">{{ patternTitle }}</h1>
