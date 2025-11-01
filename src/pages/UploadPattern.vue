@@ -44,11 +44,7 @@
             style="display: none"
             ref="fileInput"
           />
-          <PrimaryButton
-            type="button"
-            @click="triggerFileInput"
-            variant="gray"
-          >
+          <PrimaryButton type="button" @click="triggerFileInput" variant="gray">
             Choose File
           </PrimaryButton>
           <div v-if="imagePreview" class="image-preview">
@@ -78,20 +74,21 @@
 </template>
 
 <script setup>
+import "./UploadPattern.css";
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import NavBar from "./components/NavBar.vue";
-import PrimaryButton from "./components/PrimaryButton.vue";
-import IconButton from "./components/IconButton.vue";
-import Warning from "./components/Warning.vue";
+import NavBar from "../components/NavBar.vue";
+import PrimaryButton from "../components/PrimaryButton.vue";
+import IconButton from "../components/IconButton.vue";
+import Warning from "../components/Warning.vue";
 import {
   createLibrary,
   createFile,
   addItemToFile,
   getFileString,
   setImageToFile,
-} from "./api/Library";
-import { startTrackingUsingLLM } from "./api/FileTracker";
+} from "../api/Library";
+import { startTrackingUsingLLM } from "../api/FileTracker";
 
 const router = useRouter();
 const route = useRoute();
@@ -232,89 +229,3 @@ function handleCancel() {
   }
 }
 </script>
-
-<style scoped>
-.upload-pattern {
-  padding: 3rem 1.5rem;
-  max-width: 800px;
-  margin: 0 auto;
-}
-.header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-.title {
-  font-size: 2.5rem;
-  margin: 0;
-  color: var(--color-text-dark);
-}
-.subtitle {
-  margin-top: 0.5rem;
-  color: var(--color-text-dark);
-  opacity: 0.85;
-  font-family: "Fragment Mono", monospace;
-}
-.upload-form {
-  background: var(--color-bg-light);
-  padding: 2rem;
-  border-radius: 8px;
-}
-.form-group {
-  margin-bottom: 1.5rem;
-}
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: var(--color-text-dark);
-  font-family: "Fragment Mono", monospace;
-  letter-spacing: 0.02em;
-  text-shadow: 0.5px 0 0 currentColor;
-}
-.form-group input[type="text"],
-.form-group textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-family: "Fragment Mono", monospace;
-  font-size: 1rem;
-}
-.form-group input[type="file"] {
-  width: 100%;
-  padding: 0.5rem;
-}
-.form-group textarea {
-  resize: vertical;
-  min-height: 200px;
-}
-.image-upload {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.image-preview {
-  margin-top: 1rem;
-  position: relative;
-  display: inline-block;
-  align-items: center;
-}
-.image-preview img {
-  max-width: 300px;
-  max-height: 300px;
-  border-radius: 8px;
-  border: 2px solid #d1d5db;
-  display: block;
-}
-.image-preview .clear-image {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-}
-.actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 2rem;
-}
-</style>

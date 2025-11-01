@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Home from "../Home.vue";
-import Library from "../Library.vue";
-import UploadPattern from "../UploadPattern.vue";
-import Pattern from "../Pattern.vue";
-import DictionaryManager from "../DictionaryManager.vue";
+import Home from "../pages/Home.vue";
+import Library from "../pages/Library.vue";
+import UploadPattern from "../pages/UploadPattern.vue";
+import Pattern from "../pages/Pattern.vue";
+import DictionaryManager from "../pages/DictionaryManager.vue";
 import { useUserStore } from "../stores/userStore";
 
 const routes = [

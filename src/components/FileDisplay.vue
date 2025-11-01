@@ -14,6 +14,7 @@
 </template>
 
 <script setup>
+import "./FileDisplay.css";
 import { computed } from "vue";
 
 const props = defineProps({
@@ -70,44 +71,3 @@ const firstLine = computed(() => {
   return firstItem || "Empty file";
 });
 </script>
-
-<style scoped>
-.file-display {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 1rem;
-  background: var(--color-bg-light);
-  max-width: 320px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.file-display:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px var(--color-primary);
-}
-.image-container {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border-radius: 6px;
-}
-.preview-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.text-preview {
-  font-size: 0.95rem;
-  color: var(--color-text-dark);
-}
-.text-preview p {
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-</style>

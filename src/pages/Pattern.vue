@@ -121,14 +121,15 @@
 </template>
 
 <script setup>
+import "./Pattern.css";
 import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
-import NavBar from "./components/NavBar.vue";
-import PrimaryButton from "./components/PrimaryButton.vue";
-import IconButton from "./components/IconButton.vue";
-import Warning from "./components/Warning.vue";
-import AbbreviationTooltip from "./components/AbbreviationTooltip.vue";
-import { getFileString } from "./api/Library";
+import NavBar from "../components/NavBar.vue";
+import PrimaryButton from "../components/PrimaryButton.vue";
+import IconButton from "../components/IconButton.vue";
+import Warning from "../components/Warning.vue";
+import AbbreviationTooltip from "../components/AbbreviationTooltip.vue";
+import { getFileString } from "../api/Library";
 import {
   jumpTo,
   next,
@@ -136,9 +137,9 @@ import {
   getCurrentItem,
   setVisibility,
   getVisibility,
-} from "./api/FileTracker";
-import { translateTermFromL1, translateTermFromL2 } from "./api/Dictionary";
-import { translateTermFromL2 as translateAbbreviationFromL2 } from "./api/Dictionary";
+} from "../api/FileTracker";
+import { translateTermFromL1, translateTermFromL2 } from "../api/Dictionary";
+import { translateTermFromL2 as translateAbbreviationFromL2 } from "../api/Dictionary";
 
 const router = useRouter();
 
@@ -971,233 +972,3 @@ onBeforeUnmount(() => {
   window.removeEventListener("keydown", handleKeyDown);
 });
 </script>
-
-<style scoped>
-.pattern {
-  padding: 2rem 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.header {
-  margin-bottom: 2rem;
-}
-
-.title {
-  font-size: 2rem;
-  color: var(--color-text-dark);
-  margin-top: 1rem;
-  margin-bottom: 0;
-}
-
-.pattern-content {
-  background: var(--color-bg-light);
-  padding: 2rem;
-  border-radius: 8px;
-  min-height: 300px;
-}
-
-.pattern-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: flex-start;
-  position: relative;
-  width: 100%;
-}
-
-.language-controls-section {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.language-selector {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.language-selector label {
-  font-weight: 600;
-  color: var(--color-text-dark);
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-
-.language-selector select {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-primary-dark);
-  border-radius: 6px;
-  font-family: inherit;
-  font-size: 0.9rem;
-  color: var(--color-text-dark);
-  background-color: var(--color-bg-light);
-  cursor: pointer;
-}
-
-.language-selector select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-.translation-toggle {
-  display: flex;
-  align-items: center;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  color: var(--color-text-dark);
-  font-size: 0.9rem;
-  cursor: pointer;
-  user-select: none;
-}
-
-.checkbox-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  appearance: none;
-  border: 2px solid var(--color-primary-dark);
-  border-radius: 3px;
-  background-color: var(--color-bg-light);
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.checkbox-label input[type="checkbox"]:checked {
-  background-color: var(--color-primary-dark);
-  border-color: var(--color-primary-dark);
-}
-
-.checkbox-label input[type="checkbox"]:checked::after {
-  content: "✓";
-  position: absolute;
-  color: var(--color-primary-darkest);
-  font-size: 13px;
-  font-weight: bold;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  line-height: 1;
-}
-
-.checkbox-label span {
-  white-space: nowrap;
-}
-
-.pattern-wrapper {
-  display: flex;
-  gap: 2rem;
-  align-items: flex-start;
-  position: relative;
-  width: 100%;
-}
-
-.content {
-  flex: 1;
-  font-family: "Fragment Mono", monospace;
-  line-height: 1.6;
-  max-width: calc(100% - 120px);
-  text-align: left;
-}
-
-.navigation-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  position: absolute;
-  left: calc(100% - 100px);
-  padding: 0.5rem;
-  background: var(--color-bg-light);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: top 0.3s ease;
-  min-width: 80px;
-}
-
-.current-position {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-text-dark);
-  text-align: center;
-  white-space: nowrap;
-}
-
-.loading,
-.error {
-  text-align: center;
-  padding: 2rem;
-  color: var(--color-text-dark);
-  opacity: 0.7;
-}
-
-.error {
-  color: var(--color-error);
-  opacity: 1;
-}
-
-.line {
-  padding: 0.5rem;
-  color: var(--color-text-dark);
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.line.dimmed {
-  cursor: default;
-  pointer-events: none;
-}
-
-.line.dimmed .abbreviation {
-  pointer-events: auto;
-  cursor: help;
-}
-
-/* Gray out non-current lines when there's a current line */
-.content:has(.current-line) .line:not(.current-line):not(.dimmed) {
-  color: var(--color-gray);
-  opacity: 0.9;
-}
-
-.line:hover:not(.current-line):not(.dimmed) {
-  background-color: rgba(179, 206, 229, 0.2); /* Light blue hover */
-  opacity: 1;
-  color: var(--color-text-dark);
-}
-
-.line.current-line {
-  font-weight: bold;
-  background-color: rgba(247, 202, 201, 0.3); /* Light pink highlight */
-  padding: 0.5rem;
-  border-radius: 12px;
-  margin: 0.25rem 0;
-  cursor: pointer;
-  opacity: 1;
-  color: var(--color-text-dark);
-  letter-spacing: 0.02em;
-  text-shadow: 0.5px 0 0 currentColor;
-}
-
-.abbreviation {
-  color: var(--color-dark);
-  text-decoration: underline dotted;
-  cursor: help;
-  transition: all 0.2s ease;
-}
-
-.abbreviation:hover {
-  background-color: rgba(247, 202, 201, 0.2);
-  text-decoration-style: solid;
-}
-</style>

@@ -35,15 +35,16 @@
 </template>
 
 <script setup>
+import "./Library.css";
 import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
-import PrimaryButton from "./components/PrimaryButton.vue";
-import FileDisplay from "./components/FileDisplay.vue";
-import Warning from "./components/Warning.vue";
-import { getUsername } from "./api/PasswordAuthentication";
-import { getAllFiles } from "./api/Library";
-import NavBar from "./components/NavBar.vue";
-import { useUserStore } from "./stores/userStore";
+import PrimaryButton from "../components/PrimaryButton.vue";
+import FileDisplay from "../components/FileDisplay.vue";
+import Warning from "../components/Warning.vue";
+import { getUsername } from "../api/PasswordAuthentication";
+import { getAllFiles } from "../api/Library";
+import NavBar from "../components/NavBar.vue";
+import { useUserStore } from "../stores/userStore";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -189,48 +190,3 @@ function viewPattern(file) {
   });
 }
 </script>
-
-<style scoped>
-.navbar {
-  position: sticky;
-}
-.library {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-.hero {
-  text-align: center;
-  padding: 1.5rem 0;
-}
-.title {
-  font-size: 2.5rem;
-  color: var(--color-text-dark);
-}
-.actions {
-  margin-top: 1.5rem;
-  display: flex;
-  justify-content: center;
-}
-.files-section {
-  margin-top: 1rem;
-}
-.section-title {
-  font-size: 1.75rem;
-  color: var(--color-text-dark);
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-.empty-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: var(--color-text-dark);
-  opacity: 0.7;
-}
-.files-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-</style>

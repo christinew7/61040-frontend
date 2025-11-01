@@ -1,0 +1,102 @@
+.home {
+  padding: 4rem 1.5rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  max-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--color-bg-light);
+  background-image: radial-gradient(
+      circle at 10% 20%,
+      var(--color-primary) -10%,
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 20% 30%,
+      var(--color-secondary) 0%,
+      transparent 90%
+    ),
+    radial-gradient(circle at 0% 0%, var(--color-secondary) 3%, transparent 50%),
+    radial-gradient(
+      circle at 50% 60%,
+      var(--color-secondary) 0%,
+      transparent 30%
+    ),
+    radial-gradient(
+      ellipse at 60% 30%,
+      var(--color-primary) 0%,
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 70% 10%,
+      var(--color-secondary-light) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 70% 80%,
+      var(--color-primary-light) 0%,
+      transparent 80%
+    ),
+    radial-gradient(circle at 80% 60%, var(--color-primary) 0%, transparent 60%);
+}
+.hero {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.title {
+  font-size: 3rem;
+  margin: 0;
+  margin-bottom: 2rem;
+  color: var(--color-secondary-darker);
+}
+.subtitle {
+  margin-top: 2rem;
+  color: var(--color-secondary-darkest);
+  opacity: 0.85;
+}
+.actions {
+  margin-top: 0;
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  position: relative;
+}
+
+.auth-window {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  /* background: var(--color-gray); */
+  padding: 1.5rem;
+  border-radius: 8px;
+  min-width: 280px;
+  position: relative;
+}
+.auth-window h3 {
+  margin: 0 0 0.5rem 0;
+}
+.auth-window label {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  font-size: 0.9rem;
+}
+.auth-window input {
+  margin-top: 0.25rem;
+  padding: 0.75rem;
+  background: var(--color-gray-light);
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-family: "Fragment Mono", monospace;
+}
+.auth-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}

@@ -1,0 +1,42 @@
+.navbar {
+  position: sticky;
+}
+.library {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.hero {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+.title {
+  font-size: 2.5rem;
+  color: var(--color-text-dark);
+}
+.actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+.files-section {
+  margin-top: 1rem;
+}
+.section-title {
+  font-size: 1.75rem;
+  color: var(--color-text-dark);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-dark);
+  opacity: 0.7;
+}
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}

@@ -153,16 +153,17 @@
 </template>
 
 <script setup>
+import "./DictionaryManager.css";
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import PrimaryButton from "./components/PrimaryButton.vue";
+import PrimaryButton from "../components/PrimaryButton.vue";
 import {
   addTerm,
   translateTermFromL1,
   translateTermFromL2,
-} from "./api/Dictionary";
-import NavBar from "./components/NavBar.vue";
-import Warning from "./components/Warning.vue";
+} from "../api/Dictionary";
+import NavBar from "../components/NavBar.vue";
+import Warning from "../components/Warning.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -283,155 +284,3 @@ const goBack = () => {
   router.go(-1);
 };
 </script>
-
-<style scoped>
-.dictionary-manager {
-  padding: 2rem 1.5rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.header {
-  margin-bottom: 3rem;
-}
-
-.title {
-  font-size: 2.5rem;
-  color: var(--color-text-dark);
-  margin: 1rem 0 0.5rem 0;
-}
-
-.subtitle {
-  color: var(--color-text-dark);
-  opacity: 0.85;
-  margin: 0;
-}
-
-.add-term-section,
-.test-section,
-.terms-list-section {
-  background: var(--color-bg-light);
-  padding: 2rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-}
-
-.section-title {
-  font-size: 1.5rem;
-  color: var(--color-text-dark);
-  margin: 0 0 1.5rem 0;
-}
-
-.term-form {
-  width: 100%;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  font-weight: 600;
-  color: var(--color-text-dark);
-  margin-bottom: 0.5rem;
-}
-
-.form-group input {
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-family: inherit;
-  font-size: 1rem;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.test-form {
-  width: 100%;
-}
-
-.test-buttons {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-}
-
-.translation-result {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: var(--color-bg-light);
-  border-radius: 6px;
-  border-left: 4px solid var(--color-primary);
-  font-size: 1.1rem;
-}
-
-.terms-info {
-  margin-bottom: 1.5rem;
-}
-
-.info-text {
-  color: var(--color-text-dark);
-  opacity: 0.85;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.example-terms {
-  background: var(--color-bg-light);
-  padding: 1.5rem;
-  border-radius: 6px;
-}
-
-.example-terms h3 {
-  margin: 0 0 1rem 0;
-  color: var(--color-text-dark);
-}
-
-.example-terms ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.75rem;
-}
-
-.example-terms li {
-  padding: 0.5rem;
-  background: var(--color-bg-light);
-  border-radius: 4px;
-  color: var(--color-text-dark);
-  font-family: "Courier New", monospace;
-}
-
-@media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .test-buttons {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .example-terms ul {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
