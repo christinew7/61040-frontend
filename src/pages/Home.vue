@@ -70,16 +70,9 @@ const warningMessage = ref("");
 
 // Prevent scrolling on the home page
 onMounted(() => {
-  document.body.style.overflow = "hidden";
-
   if (userStore.isAuthenticated) {
     router.push({ name: "Library", params: { userId: userStore.userId } });
   }
-});
-
-// Restore scrolling when leaving the page
-onBeforeUnmount(() => {
-  document.body.style.overflow = "";
 });
 
 function showLogin() {
@@ -95,6 +88,7 @@ function showSignUp() {
 }
 
 function cancelAuth() {
+  showWarning.value = false;
   mode.value = null;
 }
 
