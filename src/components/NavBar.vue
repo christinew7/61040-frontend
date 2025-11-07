@@ -38,6 +38,7 @@ import { useRouter } from "vue-router";
 import { useUserStore } from "../stores/userStore";
 import { yarnballPath } from "../assets/yarnballPath.js";
 import PrimaryButton from "./PrimaryButton.vue";
+import { logout } from "../api/PasswordAuthentication";
 
 const props = defineProps({
   userId: {
@@ -49,8 +50,19 @@ const props = defineProps({
 const router = useRouter();
 const userStore = useUserStore();
 
-const handleLogout = () => {
-  userStore.logout();
-  router.push({ name: "Home" });
+const handleLogout = async () => {
+  try {
+    // Call backend logout API with session token
+    if (userStore.sessionToken) {
+      await logout(userStore.sessionToken);
+    }
+  } catch (err) {
+    console.error("Logout API error:", err);
+    // Continue with local logout even if API call fails
+  } finally {
+    // Clear local session regardless of API result
+    userStore.logout();
+    router.push({ name: "Home" });
+  }
 };
 </script>

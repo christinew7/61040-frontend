@@ -140,8 +140,10 @@ import {
 } from "../api/FileTracker";
 import { translateTermFromL1, translateTermFromL2 } from "../api/Dictionary";
 import { translateTermFromL2 as translateAbbreviationFromL2 } from "../api/Dictionary";
+import { useUserStore } from "../stores/userStore";
 
 const router = useRouter();
+const userStore = useUserStore();
 
 const props = defineProps({
   userId: {
@@ -262,8 +264,12 @@ const fetchPattern = async () => {
   loading.value = true;
   error.value = "";
 
+  console.log("fetchPattern called with fileId:", props.fileId);
+  console.log("fetchPattern called with userId:", props.userId);
+
   try {
-    const result = await getFileString(props.userId, props.fileId);
+    const result = await getFileString(userStore.sessionToken, props.fileId);
+    console.log("getFileString returned:", result);
     if (result?.fileString) {
       const lines = JSON.parse(result.fileString);
 
@@ -297,7 +303,7 @@ const fetchPattern = async () => {
 
 const fetchCurrentIndex = async () => {
   try {
-    const result = await getCurrentItem(props.userId, props.fileId);
+    const result = await getCurrentItem(userStore.sessionToken, props.fileId);
     console.log("Current item result:", result);
 
     // api returns { index: number}
@@ -311,7 +317,7 @@ const fetchCurrentIndex = async () => {
 
 const fetchVisibility = async () => {
   try {
-    const result = await getVisibility(props.userId, props.fileId);
+    const result = await getVisibility(userStore.sessionToken, props.fileId);
     console.log("Visibility result:", result);
 
     // Check if we have a saved preference in localStorage first
@@ -799,7 +805,7 @@ const applyTranslation = async () => {
 
 const handleNext = async () => {
   try {
-    await next(props.userId, props.fileId);
+    await next(userStore.sessionToken, props.fileId);
     await fetchCurrentIndex();
     await updateControlsPosition();
   } catch (err) {
@@ -811,7 +817,7 @@ const handleNext = async () => {
 
 const handleBack = async () => {
   try {
-    await back(props.userId, props.fileId);
+    await back(userStore.sessionToken, props.fileId);
     await fetchCurrentIndex();
     await updateControlsPosition();
   } catch (err) {
@@ -823,7 +829,7 @@ const handleBack = async () => {
 
 const handleLineClick = async (lineIndex) => {
   try {
-    await jumpTo(props.userId, props.fileId, lineIndex);
+    await jumpTo(userStore.sessionToken, props.fileId, lineIndex);
     await fetchCurrentIndex();
     await updateControlsPosition();
   } catch (err) {
@@ -842,7 +848,7 @@ const handleVisibility = async () => {
     savePreferences();
 
     // Call the API to update visibility on the backend
-    await setVisibility(props.userId, props.fileId, isVisible.value);
+    await setVisibility(userStore.sessionToken, props.fileId, isVisible.value);
 
     // If turning visibility on, scroll to current line
     if (isVisible.value) {

@@ -102,21 +102,37 @@ async function submitAuth() {
   submitting.value = true;
   try {
     let userId;
+    let sessionToken;
+
     if (mode.value === "signup") {
       userId = await register(username.value, password.value);
+      // After signup, automatically login to get session
+      const loginResult = await authenticate(username.value, password.value);
+      userId = loginResult.user;
+      sessionToken = loginResult.session;
     } else if (mode.value === "login") {
-      userId = await authenticate(username.value, password.value);
+      const result = await authenticate(username.value, password.value);
+      userId = result.user;
+      sessionToken = result.session;
     }
 
-    // Ensure userId is valid before navigating
-    if (!userId) {
-      throw new Error("Authentication succeeded but no userId returned");
+    console.log("have a session token with ", sessionToken);
+    // Ensure userId and session are valid before navigating
+    if (!userId || !sessionToken) {
+      throw new Error(
+        "Authentication succeeded but no userId or session returned"
+      );
     }
 
-    console.log("Navigating to library with userId:", userId);
+    console.log(
+      "Navigating to library with userId:",
+      userId,
+      "session:",
+      sessionToken
+    );
 
-    // Store user session
-    userStore.login(userId, username.value);
+    // Store user session with the session token
+    userStore.login(userId, username.value, sessionToken);
 
     mode.value = null;
 

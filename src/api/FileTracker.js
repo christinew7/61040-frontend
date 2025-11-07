@@ -53,20 +53,23 @@ export async function deleteTracking(owner, file) {
 /**
  * @route POST api/FileTracker/jumpTo
  * @desc Updates the current tracking position to a specified index within a file.
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
+ * @param {number} index - The index to jump to
  */
-export async function jumpTo(owner, file, index) {
+export async function jumpTo(session, file, index) {
   if (
-    typeof owner !== "string" ||
+    typeof session !== "string" ||
     typeof file !== "string" ||
     typeof index !== "number"
   ) {
     throw new TypeError(
-      "owner and file must be strings; index must be a number"
+      "session and file must be strings; index must be a number"
     );
   }
 
   try {
-    await api.post("/jumpTo", { owner, file, index });
+    await api.post("/jumpTo", { session, file, index });
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to jump to index");
   }
@@ -75,14 +78,16 @@ export async function jumpTo(owner, file, index) {
 /**
  * @route POST api/FileTracker/next
  * @desc Advances the current tracking position to the next item in the file.
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
  */
-export async function next(owner, file) {
-  if (typeof owner !== "string" || typeof file !== "string") {
-    throw new TypeError("owner and file must be strings");
+export async function next(session, file) {
+  if (typeof session !== "string" || typeof file !== "string") {
+    throw new TypeError("session and file must be strings");
   }
 
   try {
-    await api.post("/next", { owner, file });
+    await api.post("/next", { session, file });
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to move to next item");
   }
@@ -91,14 +96,16 @@ export async function next(owner, file) {
 /**
  * @route POST api/FileTracker/back
  * @desc Moves the current tracking position to the previous item in the file.
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
  */
-export async function back(owner, file) {
-  if (typeof owner !== "string" || typeof file !== "string") {
-    throw new TypeError("owner and file must be strings");
+export async function back(session, file) {
+  if (typeof session !== "string" || typeof file !== "string") {
+    throw new TypeError("session and file must be strings");
   }
 
   try {
-    await api.post("/back", { owner, file });
+    await api.post("/back", { session, file });
   } catch (err) {
     throw new Error(
       err.response?.data?.error || "Failed to move to previous item"
@@ -109,20 +116,23 @@ export async function back(owner, file) {
 /**
  * @route POST api/FileTracker/setVisibility
  * @desc Sets the visibility status of a tracked file for a user.
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
+ * @param {boolean} visible - The visibility status
  */
-export async function setVisibility(owner, file, visible) {
+export async function setVisibility(session, file, visible) {
   if (
-    typeof owner !== "string" ||
+    typeof session !== "string" ||
     typeof file !== "string" ||
     typeof visible !== "boolean"
   ) {
     throw new TypeError(
-      "owner and file must be strings; visible must be a boolean"
+      "session and file must be strings; visible must be a boolean"
     );
   }
 
   try {
-    await api.post("/setVisibility", { owner, file, visible });
+    await api.post("/setVisibility", { session, file, visible });
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to set visibility");
   }
@@ -131,27 +141,31 @@ export async function setVisibility(owner, file, visible) {
 /**
  * @route POST api/FileTracker/startTrackingUsingLLM
  * @desc Starts tracking a file using an LLM to determine an initial current index.
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
+ * @param {string} fileInput - The file content string
+ * @param {number} fileMaxIndex - The maximum index (number of lines - 1)
  */
 export async function startTrackingUsingLLM(
-  owner,
+  session,
   file,
   fileInput,
   fileMaxIndex
 ) {
   if (
-    typeof owner !== "string" ||
+    typeof session !== "string" ||
     typeof file !== "string" ||
     typeof fileInput !== "string" ||
     typeof fileMaxIndex !== "number"
   ) {
     throw new TypeError(
-      "owner, file, fileInput must be strings; fileMaxIndex must be a number"
+      "session, file, fileInput must be strings; fileMaxIndex must be a number"
     );
   }
 
   try {
     const response = await api.post("/startTrackingUsingLLM", {
-      owner,
+      session,
       file,
       fileInput,
       fileMaxIndex,
@@ -168,14 +182,19 @@ export async function startTrackingUsingLLM(
 /**
  * @route POST api/FileTracker/_getCurrentItem
  * @desc Retrieves the current tracking index for a specific file being tracked by a user.
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
  */
-export async function getCurrentItem(owner, file) {
-  if (typeof owner !== "string" || typeof file !== "string") {
-    throw new TypeError("owner and file must be strings");
+export async function getCurrentItem(session, file) {
+  if (typeof session !== "string" || typeof file !== "string") {
+    throw new TypeError("session and file must be strings");
   }
 
   try {
-    const response = await api.post("/_getCurrentItem", { owner, file });
+    const response = await api.post("/_getCurrentItem", {
+      session,
+      file,
+    });
     return response.data; // array of { index: number }
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to get current item");
@@ -185,14 +204,16 @@ export async function getCurrentItem(owner, file) {
 /**
  * @route POST api/FileTracker/_getVisibility
  * @desc Retrieves the visibility for a specific file being tracked by a user.
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
  */
-export async function getVisibility(owner, file) {
-  if (typeof owner !== "string" || typeof file !== "string") {
-    throw new TypeError("owner and file must be strings");
+export async function getVisibility(session, file) {
+  if (typeof session !== "string" || typeof file !== "string") {
+    throw new TypeError("session and file must be strings");
   }
 
   try {
-    const response = await api.post("/_getVisibility", { owner, file });
+    const response = await api.post("/_getVisibility", { session, file });
     return response.data;
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to get current item");

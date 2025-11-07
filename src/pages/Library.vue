@@ -15,7 +15,10 @@
       </header>
 
       <section class="files-section">
-        <div v-if="files.length === 0" class="empty-state">
+        <div v-if="loadingFiles" class="loading-state">
+          <p>Fetching your files from library...</p>
+        </div>
+        <div v-else-if="files.length === 0" class="empty-state">
           <p>
             Your library has no patterns yet. Upload your first pattern to get
             started!
@@ -61,6 +64,7 @@ const welcomeMessage = ref("Welcome");
 const showWarning = ref(false);
 const warningMessage = ref("");
 const pendingRoute = ref(null);
+const loadingFiles = ref(false);
 
 const handleWarningClose = () => {
   showWarning.value = false;
@@ -85,19 +89,40 @@ const checkFirstTimeUser = () => {
 };
 
 const fetchUsername = async () => {
-  if (props.userId) {
+  console.log("fetchUsername called");
+  console.log("userStore.sessionToken:", userStore.sessionToken);
+  console.log("userStore.userId:", userStore.userId);
+  console.log("userStore.username:", userStore.username);
+
+  // If username is already in store, use it
+  // if (userStore.username) {
+  //   displayName.value = userStore.username;
+  //   console.log("Using username from store:", userStore.username);
+  //   return;
+  // }
+
+  if (userStore.sessionToken) {
     try {
-      const result = await getUsername(props.userId);
-      displayName.value = result.username;
-      // Update username in store if it's different
-      if (userStore.username !== result.username) {
-        userStore.updateUsername(result.username);
+      const result = await getUsername(userStore.sessionToken);
+      console.log("getUsername result:", result);
+      console.log("result.username:", result.username);
+
+      if (result && result.username) {
+        displayName.value = result.username;
+        // Update username in store if it's different
+        if (userStore.username !== result.username) {
+          userStore.updateUsername(result.username);
+        }
+      } else {
+        console.error("No username in result");
+        displayName.value = "Guest";
       }
     } catch (err) {
       console.error("Failed to fetch username", err);
       displayName.value = "Guest";
     }
   } else {
+    console.log("No session token available");
     displayName.value = "Guest";
   }
 };
@@ -154,10 +179,11 @@ watch(
 const files = ref([]);
 
 const fetchAllFiles = async () => {
-  if (props.userId) {
+  if (userStore.sessionToken) {
+    loadingFiles.value = true;
     try {
-      const result = await getAllFiles(props.userId);
-      console.log("getAllFiles result:", result);
+      const result = await getAllFiles(userStore.sessionToken);
+      console.log(result);
 
       // Extract first item (title) from each file's items array
       files.value = result.files
@@ -171,6 +197,8 @@ const fetchAllFiles = async () => {
         .reverse();
     } catch (err) {
       console.error("Failed to fetch files:", err);
+    } finally {
+      loadingFiles.value = false;
     }
   }
 };
@@ -181,6 +209,8 @@ function onUpload() {
 
 function viewPattern(file) {
   console.log("Viewing pattern:", file);
+  console.log("File ID:", file.id);
+  console.log("All files:", files.value);
   router.push({
     name: "Pattern",
     params: {

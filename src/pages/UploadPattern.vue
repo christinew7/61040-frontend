@@ -81,8 +81,8 @@ import NavBar from "../components/NavBar.vue";
 import PrimaryButton from "../components/PrimaryButton.vue";
 import IconButton from "../components/IconButton.vue";
 import Warning from "../components/Warning.vue";
+import { useUserStore } from "../stores/userStore";
 import {
-  createLibrary,
   createFile,
   addItemToFile,
   getFileString,
@@ -92,6 +92,7 @@ import { startTrackingUsingLLM } from "../api/FileTracker";
 
 const router = useRouter();
 const route = useRoute();
+const userStore = useUserStore();
 
 const props = defineProps({
   userId: {
@@ -151,7 +152,9 @@ async function handleUpload() {
   }
 
   const userId = route.params.userId;
-  if (!userId) {
+  const session = userStore.sessionToken;
+
+  if (!userId || !session) {
     warningMessage.value = "You're not logged in! Please log in again.";
     showWarning.value = true;
     return;
@@ -159,14 +162,10 @@ async function handleUpload() {
 
   uploading.value = true;
   try {
-    console.log("Creating new library for user:", userId);
-    // manual create library temporarily for the user because there are no syncs
-    const libraryId = await createLibrary(userId);
-
     console.log("Creating new file for user:", userId);
 
-    // Create a new file in the user's library
-    const fileId = await createFile(userId);
+    // Create a new file in the user's library using session
+    const fileId = await createFile(session);
     console.log("File created with ID:", fileId);
 
     // Prepend pattern name to the beginning of content
@@ -180,7 +179,7 @@ async function handleUpload() {
     console.log(`fileId is ${fileId}`);
 
     for (const line of lines) {
-      await addItemToFile(userId, fileId, line);
+      await addItemToFile(session, fileId, line);
     }
 
     console.log("Pattern uploaded successfully");
@@ -188,7 +187,7 @@ async function handleUpload() {
     // Upload image if provided
     if (patternImage.value) {
       try {
-        await setImageToFile(userId, fileId, patternImage.value);
+        await setImageToFile(session, fileId, patternImage.value);
         console.log("Pattern image uploaded successfully");
       } catch (imgErr) {
         console.error("Failed to upload image:", imgErr);
@@ -197,12 +196,11 @@ async function handleUpload() {
     }
 
     // Also start fileTracking
-    // SHOULD BE A SYNC
-    const fileString = (await getFileString(userId, fileId)).fileString;
+    const fileString = (await getFileString(session, fileId)).fileString;
     const fileMaxIndex = lines.length - 1;
 
     const result = await startTrackingUsingLLM(
-      userId,
+      session,
       fileId,
       fileString,
       fileMaxIndex

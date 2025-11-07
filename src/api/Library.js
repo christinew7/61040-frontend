@@ -37,11 +37,13 @@ export async function deleteLibrary(owner) {
 /**
  * @route POST /api/Library/createFile
  * @desc Creates a File with the current DateTime and empty items, and adds it to this owner's Library.
+ * @param {string} session - The session token to authenticate the request
  */
-export async function createFile(owner) {
-  //   if (typeof owner !== "string") throw new TypeError("owner must be a string");
+export async function createFile(session) {
+  if (typeof session !== "string")
+    throw new TypeError("session must be a string");
   try {
-    const response = await api.post("/createFile", { owner });
+    const response = await api.post("/createFile", { session });
     return response.data.id;
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to create file");
@@ -51,17 +53,20 @@ export async function createFile(owner) {
 /**
  * @route POST /api/Library/addItemToFile
  * @desc Adds an item to the items list of this file.
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
+ * @param {string} item - The item to add
  */
-export async function addItemToFile(owner, file, item) {
+export async function addItemToFile(session, file, item) {
   if (
-    typeof owner !== "string" ||
+    typeof session !== "string" ||
     typeof file !== "string" ||
     typeof item !== "string"
   ) {
-    throw new TypeError("owner, file, and item must be strings");
+    throw new TypeError("session, file, and item must be strings");
   }
   try {
-    await api.post("/addItemToFile", { owner, file, item });
+    await api.post("/addItemToFile", { session, file, item });
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to add item to file");
   }
@@ -130,13 +135,19 @@ export async function deleteFile(owner, file) {
 /**
  * @route POST /api/Library/_getAllFiles
  * @desc Returns all Files in this owner's Library (full FileDoc objects, not just IDs).
+ * @param {string} session - The session token to authenticate the request
  */
-export async function getAllFiles(owner) {
-  if (typeof owner !== "string") throw new TypeError("owner must be a string");
+export async function getAllFiles(session) {
+  if (typeof session !== "string")
+    throw new TypeError("session must be a string");
+  console.log("getAllFiles called with session:", session);
+  console.log("Sending request body:", { session });
   try {
-    const response = await api.post("/_getAllFiles", { owner });
+    const response = await api.post("/_getAllFiles", { session });
+    console.log("getAllFiles response:", response.data);
     return response.data; // array of files
   } catch (err) {
+    console.error("getAllFiles error:", err.response?.data);
     throw new Error(err.response?.data?.error || "Failed to get all files");
   }
 }
@@ -144,13 +155,15 @@ export async function getAllFiles(owner) {
 /**
  * @route POST /api/Library/_getFileString
  * @desc Returns the items list of the specified file as a JSON string.
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
  */
-export async function getFileString(owner, file) {
-  if (typeof owner !== "string" || typeof file !== "string") {
-    throw new TypeError("owner and file must be strings");
+export async function getFileString(session, file) {
+  if (typeof session !== "string" || typeof file !== "string") {
+    throw new TypeError("session and file must be strings");
   }
   try {
-    const response = await api.post("/_getFileString", { owner, file });
+    const response = await api.post("/_getFileString", { session, file });
     return response.data; // array of { fileString: string }
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to get file string");
@@ -160,17 +173,20 @@ export async function getFileString(owner, file) {
 /**
  * @route POST /api/Library/setImageToFile
  * @desc Sets the image field of this file to image.
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
+ * @param {string} image - The base64 image data
  */
-export async function setImageToFile(owner, file, image) {
+export async function setImageToFile(session, file, image) {
   if (
-    typeof owner !== "string" ||
+    typeof session !== "string" ||
     typeof file !== "string" ||
     typeof image !== "string"
   ) {
-    throw new TypeError("owner, file, and image must be strings");
+    throw new TypeError("session, file, and image must be strings");
   }
   try {
-    await api.post("/setImageToFile", { owner, file, image });
+    await api.post("/setImageToFile", { session, file, image });
   } catch (err) {
     throw new Error(err.response?.data?.error || "Failed to set image to file");
   }
@@ -179,13 +195,15 @@ export async function setImageToFile(owner, file, image) {
 /**
  * @route POST /api/Library/clearImageFromFile
  * @desc Clears the image field of this file (sets to null).
+ * @param {string} session - The session token to authenticate the request
+ * @param {string} file - The file ID
  */
-export async function clearImageFromFile(owner, file) {
-  if (typeof owner !== "string" || typeof file !== "string") {
-    throw new TypeError("owner and file must be strings");
+export async function clearImageFromFile(session, file) {
+  if (typeof session !== "string" || typeof file !== "string") {
+    throw new TypeError("session and file must be strings");
   }
   try {
-    await api.post("/clearImageFromFile", { owner, file });
+    await api.post("/clearImageFromFile", { session, file });
   } catch (err) {
     throw new Error(
       err.response?.data?.error || "Failed to clear image from file"
